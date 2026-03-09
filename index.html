@@ -40,7 +40,7 @@
         }
 
         .input-group {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         input[type="text"] {
@@ -58,6 +58,13 @@
             border-color: #00bcd4;
             background: white;
             box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
         }
 
         .result-container {
@@ -96,13 +103,14 @@
             background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%);
             color: white;
             border: none;
-            padding: 15px 40px;
+            padding: 15px 30px;
             font-size: 1.1em;
             border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+            flex: 1;
         }
 
         button:hover {
@@ -137,6 +145,10 @@
             .result-comment {
                 font-size: 1em;
             }
+
+            .button-group {
+                gap: 10px;
+            }
         }
 
         @keyframes fadeIn {
@@ -157,7 +169,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>牛子长度计算器</h1>
+        <h1>🐂 牛子长度计算器</h1>
         
         <div class="input-group">
             <input 
@@ -173,7 +185,10 @@
             <div class="placeholder-text">等待输入...</div>
         </div>
 
-        <button onclick="calculate()">🎲 重新计算</button>
+        <div class="button-group">
+            <button onclick="calculate()">🎲 重新计算</button>
+            <button onclick="calculate()">🔍 查询</button>
+        </div>
     </div>
 
     <script>
@@ -196,15 +211,15 @@
 
         // 根据数值获取评论
         function getComment(value) {
-            if (value <= 100) {
+            if (value <= 177) {  // 0-177
                 return "进化树在你这里长了回头枝";
-            } else if (value <= 500) {
+            } else if (value <= 355) {  // 178-355
                 return "《自然》杂志拒绝发表：样本量不足。";
-            } else if (value <= 2000) {
+            } else if (value <= 533) {  // 356-533
                 return "NASA已发出邀请：我们需要你的天线。";
-            } else if (value <= 3500) {
+            } else if (value <= 711) {  // 534-711
                 return "三体人发来贺电：地球人终于有拿得出手的东西了";
-            } else {
+            } else {  // 712-888
                 return "建议捐给国家，用于建造跨海大桥";
             }
         }
@@ -228,7 +243,7 @@
             const userHash = hashString(username);
             const timestamp = Date.now();
             const seed = userHash + timestamp;
-            const randomValue = Math.floor(seededRandom(seed) * 5001); // 0-5000
+            const randomValue = Math.floor(seededRandom(seed) * 889); // 0-888
 
             // 获取评论
             const comment = getComment(randomValue);
@@ -239,18 +254,4 @@
             resultContainer.classList.add('animate');
 
             resultContainer.innerHTML = `
-                <div class="result-number">${randomValue} cm</div>
-                <div class="result-comment">${comment}</div>
-            `;
-        }
-
-        // 支持回车键触发计算
-        document.getElementById('username').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                calculate();
-            }
-        });
-    </script>
-</body>
-
-</html>
+                <div class="result-number">${randomValue}
