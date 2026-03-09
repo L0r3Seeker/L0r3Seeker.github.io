@@ -40,7 +40,7 @@
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         input[type="text"] {
@@ -58,13 +58,6 @@
             border-color: #00bcd4;
             background: white;
             box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
         }
 
         .result-container {
@@ -99,11 +92,18 @@
             font-size: 1.2em;
         }
 
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         button {
             background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 15px 40px;
             font-size: 1.1em;
             border-radius: 12px;
             cursor: pointer;
@@ -111,6 +111,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
             flex: 1;
+            min-width: 140px;
         }
 
         button:hover {
@@ -147,7 +148,11 @@
             }
 
             .button-group {
-                gap: 10px;
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
             }
         }
 
@@ -169,7 +174,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🐂 牛子长度计算器</h1>
+        <h1>牛子长度计算器</h1>
         
         <div class="input-group">
             <input 
@@ -186,8 +191,8 @@
         </div>
 
         <div class="button-group">
-            <button onclick="calculate()">🎲 重新计算</button>
-            <button onclick="calculate()">🔍 查询</button>
+            <button onclick="query()">🔍 查询</button>
+            <button onclick="recalculate()">🎲 重新计算</button>
         </div>
     </div>
 
@@ -209,49 +214,47 @@
             return x - Math.floor(x);
         }
 
-        // 根据数值获取评论
+        // 根据数值获取评论（适配0~1000范围）
         function getComment(value) {
-            if (value <= 177) {  // 0-177
+            if (value <= 20) {
                 return "进化树在你这里长了回头枝";
-            } else if (value <= 355) {  // 178-355
+            } else if (value <= 100) {
                 return "《自然》杂志拒绝发表：样本量不足。";
-            } else if (value <= 533) {  // 356-533
+            } else if (value <= 400) {
                 return "NASA已发出邀请：我们需要你的天线。";
-            } else if (value <= 711) {  // 534-711
+            } else if (value <= 700) {
                 return "三体人发来贺电：地球人终于有拿得出手的东西了";
-            } else {  // 712-888
+            } else {
                 return "建议捐给国家，用于建造跨海大桥";
             }
         }
 
-        // 计算函数
-        function calculate() {
-            const username = document.getElementById('username').value.trim();
-            const errorMessage = document.getElementById('errorMessage');
-            const resultContainer = document.getElementById('resultContainer');
-
-            // 清除错误信息
-            errorMessage.textContent = '';
-
-            // 验证用户名
-            if (!username) {
-                errorMessage.textContent = '⚠️ 请输入用户名';
-                return;
-            }
-
-            // 生成随机数
+        // 生成随机数的核心逻辑
+        function generateRandomValue(username) {
             const userHash = hashString(username);
             const timestamp = Date.now();
             const seed = userHash + timestamp;
-            const randomValue = Math.floor(seededRandom(seed) * 889); // 0-888
+            return Math.floor(seededRandom(seed) * 1001); // 0-1000
+        }
 
-            // 获取评论
-            const comment = getComment(randomValue);
-
-            // 更新显示
+        // 显示结果
+        function displayResult(value) {
+            const comment = getComment(value);
+            const resultContainer = document.getElementById('resultContainer');
+            
             resultContainer.classList.remove('animate');
             void resultContainer.offsetWidth; // 触发重排
             resultContainer.classList.add('animate');
 
             resultContainer.innerHTML = `
-                <div class="result-number">${randomValue}
+                <div class="result-number">${value} cm</div>
+                <div class="result-comment">${comment}</div>
+            `;
+        }
+
+        // 查询函数
+        function query() {
+            const username = document.getElementById('username').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+
+            
