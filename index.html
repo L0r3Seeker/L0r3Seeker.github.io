@@ -19,6 +19,58 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        /* 深色模式样式 */
+        body.dark-mode {
+            background: #1a1a1a;
+        }
+
+        body.dark-mode .container {
+            background: #2d2d2d;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-mode h1 {
+            color: #4dd0e1;
+        }
+
+        body.dark-mode input[type="text"] {
+            background: #3d3d3d;
+            border-color: #4d4d4d;
+            color: white;
+        }
+
+        body.dark-mode input[type="text"]:focus {
+            border-color: #4dd0e1;
+            background: #3d3d3d;
+        }
+
+        body.dark-mode .rank-list {
+            background: #3d3d3d;
+        }
+
+        body.dark-mode .rank-item {
+            border-color: #4d4d4d;
+        }
+
+        body.dark-mode .rank-name {
+            color: #ddd;
+        }
+
+        body.dark-mode .rank-empty {
+            color: #888;
+        }
+
+        body.dark-mode .clear-rank {
+            border-color: #4dd0e1;
+            color: #4dd0e1;
+        }
+
+        body.dark-mode .clear-rank:hover {
+            background: #4dd0e1;
+            color: #2d2d2d;
         }
 
         .container {
@@ -28,15 +80,40 @@
             padding: 40px;
             max-width: 500px;
             width: 100%;
-            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
         }
 
         h1 {
             color: #00bcd4;
             font-size: 2.5em;
-            margin-bottom: 30px;
             font-weight: 700;
             letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .mode-toggle {
+            background: none;
+            border: none;
+            font-size: 1.8em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            width: auto;
+            margin: 0;
+            box-shadow: none;
+        }
+
+        .mode-toggle:hover {
+            transform: scale(1.1);
+            background: rgba(0, 188, 212, 0.1);
         }
 
         .input-group {
@@ -72,6 +149,20 @@
             transition: all 0.3s ease;
         }
 
+        /* 动态彩色背景 */
+        .result-container.rainbow {
+            animation: rainbow 3s ease infinite;
+            background-size: 400% 400%;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff); }
+            25% { background-position: 50% 50%; background: linear-gradient(135deg, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000); }
+            50% { background-position: 100% 50%; background: linear-gradient(135deg, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000, #ff7f00); }
+            75% { background-position: 50% 50%; background: linear-gradient(135deg, #00ff00, #0000ff, #4b0082, #8f00ff, #ff0000, #ff7f00, #ffff00); }
+            100% { background-position: 0% 50%; background: linear-gradient(135deg, #0000ff, #4b0082, #8f00ff, #ff0000, #ff7f00, #ffff00, #00ff00); }
+        }
+
         .result-number {
             font-size: 3em;
             font-weight: 700;
@@ -92,13 +183,6 @@
             font-size: 1.2em;
         }
 
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
         button {
             background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%);
             color: white;
@@ -110,8 +194,8 @@
             font-weight: 600;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
-            flex: 1;
-            min-width: 140px;
+            width: 100%;
+            margin-bottom: 30px;
         }
 
         button:hover {
@@ -130,6 +214,88 @@
             min-height: 20px;
         }
 
+        /* 排行榜样式 */
+        .rank-section {
+            border-top: 2px solid #e0e0e0;
+            padding-top: 30px;
+            transition: border-color 0.3s ease;
+        }
+
+        body.dark-mode .rank-section {
+            border-top-color: #4d4d4d;
+        }
+
+        .rank-title {
+            color: #00bcd4;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rank-list {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .rank-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .rank-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank-medal {
+            font-size: 1.2em;
+            margin-right: 10px;
+            width: 30px;
+        }
+
+        .rank-name {
+            flex: 1;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .rank-value {
+            font-weight: 700;
+            color: #00bcd4;
+        }
+
+        .rank-empty {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .clear-rank {
+            background: none;
+            border: 1px solid #00bcd4;
+            color: #00bcd4;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: auto;
+            margin: 0;
+            box-shadow: none;
+        }
+
+        .clear-rank:hover {
+            background: #00bcd4;
+            color: white;
+            transform: none;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 30px 20px;
@@ -145,14 +311,6 @@
 
             .result-comment {
                 font-size: 1em;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            button {
-                width: 100%;
             }
         }
 
@@ -174,7 +332,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>牛子长度计算器</h1>
+        <div class="header">
+            <h1>🐂 牛子长度计算器</h1>
+            <button class="mode-toggle" onclick="toggleDarkMode()" id="modeToggle">🌙</button>
+        </div>
         
         <div class="input-group">
             <input 
@@ -190,71 +351,202 @@
             <div class="placeholder-text">等待输入...</div>
         </div>
 
-        <div class="button-group">
-            <button onclick="query()">🔍 查询</button>
-            <button onclick="recalculate()">🎲 重新计算</button>
+        <button onclick="calculate()">🎲 重新计算</button>
+
+        <!-- 排行榜区域 -->
+        <div class="rank-section">
+            <div class="rank-title">
+                🏆 牛子排行榜
+                <button class="clear-rank" onclick="clearRank()">清除榜单</button>
+            </div>
+            <div class="rank-list" id="rankList">
+                <div class="rank-empty">暂无数据，快来刷新记录！</div>
+            </div>
         </div>
     </div>
 
     <script>
-        // 字符串哈希函数 - 将用户名转换为数字种子
+        // 深色模式切换
+        function toggleDarkMode() {
+            const body = document.body;
+            const modeToggle = document.getElementById('modeToggle');
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                modeToggle.textContent = '☀️';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                modeToggle.textContent = '🌙';
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        // 加载深色模式偏好
+        function loadDarkMode() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'enabled') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('modeToggle').textContent = '☀️';
+            }
+        }
+
+        // 振动反馈
+        function vibrate() {
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(50);
+            }
+        }
+
+        // 排行榜数据
+        let rankData = [];
+
+        function loadRank() {
+            const saved = localStorage.getItem('rankData');
+            if (saved) {
+                rankData = JSON.parse(saved);
+            }
+        }
+
+        function saveRank() {
+            localStorage.setItem('rankData', JSON.stringify(rankData));
+        }
+
+        function displayRank() {
+            const rankList = document.getElementById('rankList');
+            
+            if (rankData.length === 0) {
+                rankList.innerHTML = '<div class="rank-empty">暂无数据，快来刷新记录！</div>';
+                return;
+            }
+
+            const sorted = [...rankData].sort((a, b) => b.value - a.value).slice(0, 10);
+
+            rankList.innerHTML = sorted.map((item, index) => {
+                let medal = '';
+                if (index === 0) medal = '🥇';
+                else if (index === 1) medal = '🥈';
+                else if (index === 2) medal = '🥉';
+                else medal = `${index + 1}.`;
+
+                return `
+                    <div class="rank-item">
+                        <span class="rank-medal">${medal}</span>
+                        <span class="rank-name">${escapeHtml(item.name)}</span>
+                        <span class="rank-value">${item.value} cm</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addToRank(name, value) {
+            const existingIndex = rankData.findIndex(item => item.name === name);
+            
+            if (existingIndex !== -1) {
+                if (value > rankData[existingIndex].value) {
+                    rankData[existingIndex].value = value;
+                }
+            } else {
+                rankData.push({ name, value });
+            }
+
+            if (rankData.length > 100) {
+                rankData = rankData.slice(-100);
+            }
+
+            saveRank();
+            displayRank();
+        }
+
+        function clearRank() {
+            if (confirm('确定要清除所有排行榜数据吗？')) {
+                rankData = [];
+                saveRank();
+                displayRank();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function hashString(str) {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
                 const char = str.charCodeAt(i);
                 hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // 转换为32位整数
+                hash = hash & hash;
             }
             return Math.abs(hash);
         }
 
-        // 基于种子的随机数生成器
         function seededRandom(seed) {
             const x = Math.sin(seed) * 10000;
             return x - Math.floor(x);
         }
 
-        // 根据数值获取评论（适配0~1000范围）
         function getComment(value) {
             if (value <= 20) {
                 return "进化树在你这里长了回头枝";
-            } else if (value <= 100) {
+            } else if (value <= 150) {
                 return "《自然》杂志拒绝发表：样本量不足。";
-            } else if (value <= 400) {
+            } else if (value <= 500) {
                 return "NASA已发出邀请：我们需要你的天线。";
-            } else if (value <= 700) {
+            } else if (value <= 800) {
                 return "三体人发来贺电：地球人终于有拿得出手的东西了";
             } else {
                 return "建议捐给国家，用于建造跨海大桥";
             }
         }
 
-        // 生成随机数的核心逻辑
-        function generateRandomValue(username) {
+        function calculate() {
+            const username = document.getElementById('username').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            const resultContainer = document.getElementById('resultContainer');
+
+            errorMessage.textContent = '';
+
+            if (!username) {
+                errorMessage.textContent = '⚠️ 请输入用户名';
+                return;
+            }
+
             const userHash = hashString(username);
             const timestamp = Date.now();
             const seed = userHash + timestamp;
-            return Math.floor(seededRandom(seed) * 1001); // 0-1000
-        }
+            const randomValue = Math.floor(seededRandom(seed) * 1001);
 
-        // 显示结果
-        function displayResult(value) {
-            const comment = getComment(value);
-            const resultContainer = document.getElementById('resultContainer');
-            
+            const comment = getComment(randomValue);
+
             resultContainer.classList.remove('animate');
-            void resultContainer.offsetWidth; // 触发重排
+            void resultContainer.offsetWidth;
             resultContainer.classList.add('animate');
 
+            if (randomValue > 800) {
+                resultContainer.classList.add('rainbow');
+                vibrate();
+            } else {
+                resultContainer.classList.remove('rainbow');
+            }
+
             resultContainer.innerHTML = `
-                <div class="result-number">${value} cm</div>
+                <div class="result-number">${randomValue} cm</div>
                 <div class="result-comment">${comment}</div>
             `;
+
+            addToRank(username, randomValue);
         }
 
-        // 查询函数
-        function query() {
-            const username = document.getElementById('username').value.trim();
-            const errorMessage = document.getElementById('errorMessage');
+        loadDarkMode();
+        loadRank();
+        displayRank();
 
-            
+        document.getElementById('username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+</body>
+</html>
