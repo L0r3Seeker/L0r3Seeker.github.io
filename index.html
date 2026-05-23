@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>牛子长度计算器</title>
     <style>
         * {
@@ -15,16 +15,16 @@
         :root {
             --bg-primary: #ffffff;
             --bg-elevated: #f5f5f7;
-            --surface-card: #ffffff;
-            --surface-soft: #f9f9fb;
+            --surface-card: rgba(255, 255, 255, 0.92);
+            --surface-soft: rgba(249, 249, 251, 0.88);
             --text-main: #1d1d1f;
             --text-secondary: #6e6e73;
             --text-tertiary: #8e8e93;
-            --border-subtle: rgba(0, 0, 0, 0.05);
+            --border-subtle: rgba(0, 0, 0, 0.06);
             --accent-dark: #2c2c2e;
             --accent-hover: #3a3a3c;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03);
-            --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.06);
             --transition-smooth: all 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             --radius-xl: 28px;
             --radius-lg: 20px;
@@ -37,16 +37,16 @@
         body.dark-mode {
             --bg-primary: #0a0a0c;
             --bg-elevated: #1c1c1e;
-            --surface-card: #1c1c1e;
-            --surface-soft: #2c2c2e;
+            --surface-card: rgba(28, 28, 30, 0.92);
+            --surface-soft: rgba(44, 44, 46, 0.88);
             --text-main: #f5f5f7;
             --text-secondary: #aeaeb2;
             --text-tertiary: #8e8e93;
             --border-subtle: rgba(255, 255, 255, 0.08);
             --accent-dark: #3a3a3c;
             --accent-hover: #4a4a4c;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-            --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.3);
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.3);
             --error-color: #ff453a;
             --warning-color: #ff9f0a;
         }
@@ -62,12 +62,28 @@
             padding: 24px 16px;
             transition: background 0.3s ease;
             -webkit-font-smoothing: antialiased;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 0;
+            pointer-events: none;
         }
 
         .container {
+            position: relative;
+            z-index: 2;
             max-width: 540px;
             width: 100%;
             background: var(--surface-card);
+            backdrop-filter: blur(20px);
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-md);
             padding: 32px 28px;
@@ -103,6 +119,7 @@
             align-items: center;
             justify-content: center;
             color: var(--text-main);
+            backdrop-filter: blur(4px);
         }
 
         .mode-toggle:hover {
@@ -161,6 +178,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            backdrop-filter: blur(4px);
         }
 
         .result-container.rainbow {
@@ -253,6 +271,7 @@
             background: var(--surface-soft);
             border-radius: var(--radius-md);
             padding: 8px 4px;
+            backdrop-filter: blur(4px);
         }
 
         .rank-item {
@@ -346,6 +365,9 @@
     </style>
 </head>
 <body>
+
+    <canvas id="particleCanvas"></canvas>
+
     <div class="container">
         <div class="header">
             <h1>🐂 牛子长度计算器</h1>
@@ -366,7 +388,7 @@
             <div class="placeholder-text">等待输入...</div>
         </div>
 
-        <button onclick="calculate()">🎲 重新计算</button>
+        <button id="calcBtn">🎲 重新计算</button>
 
         <div class="rank-section">
             <div class="rank-title">
@@ -381,39 +403,259 @@
 
     <script>
         // ==================== 违禁词配置区 ====================
-        // 在这里添加/删除/修改违禁词，支持中英文，数量不限
-        // 注意：匹配时不区分大小写，例如 "admin" 会匹配 "Admin"、"ADMIN" 等
         const forbiddenWords = [
-            "习近平",
-            "邓小平",
-            "胡锦涛",
-            "江泽民",
-            "毛泽东",
-            "周恩来",
-            "林彪",
-            "王洪文",
-            "Admin"
+            "习近平", "江泽民", "胡锦涛", "邓小平", "毛泽东",
+            "叶剑英", "李先念", "刘少奇", "王洪文", "林彪",
+            "赵紫阳", "韩正"
         ];
         // ====================================================
 
-        // 违禁词检测函数（不区分大小写）
+        // ==================== 彩蛋计数器（按钮文字替换） ====================
+        let clickCount = 0;              // 有效点击次数（仅用于彩蛋展示）
+        let resetTimer = null;           // 重置定时器
+        let lastCalculatedResult = null; // 最后一次有效计算的结果（用户名+数值+评论）
+        let lastValidUsername = "";      // 最后一次成功计算的用户名
+        let lastResultHTML = "";         // 最后一次的结果HTML
+        
+        const calcBtn = document.getElementById('calcBtn');
+        const defaultBtnText = '🎲 重新计算';
+        
+        // 更新按钮文字（根据点击次数）
+        function updateButtonText() {
+            if (clickCount === 1) {
+                calcBtn.textContent = '✨ 成绩很好了';
+            } else if (clickCount === 2) {
+                calcBtn.textContent = '🌟 很棒了';
+            } else if (clickCount === 3) {
+                calcBtn.textContent = '💪 很不错了';
+            } else if (clickCount >= 4) {
+                calcBtn.textContent = `×${clickCount}`;
+            }
+        }
+        
+        // 重置计数器（恢复按钮文字，清除定时器）
+        function resetButtonCounter() {
+            if (resetTimer) {
+                clearTimeout(resetTimer);
+                resetTimer = null;
+            }
+            clickCount = 0;
+            calcBtn.textContent = defaultBtnText;
+        }
+        
+        // 彩蛋点击（只改变按钮文字，不重新计算结果）
+        function onEggClick() {
+            // 清除之前的定时器
+            if (resetTimer) {
+                clearTimeout(resetTimer);
+            }
+            // 增加计数
+            clickCount++;
+            // 更新按钮文字
+            updateButtonText();
+            // 设置2秒后自动重置
+            resetTimer = setTimeout(() => {
+                resetButtonCounter();
+            }, 2000);
+        }
+        // ====================================================
+
+        // ==================== 粒子网络背景 ====================
+        const canvas = document.getElementById('particleCanvas');
+        let ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let mouseX = -1000, mouseY = -1000;
+        let mousePresent = false;
+        
+        const PARTICLE_COUNT = 100;
+        const PARTICLE_SPEED = 0.8;
+        const CONNECT_DISTANCE = 150;
+        const MOUSE_CONNECT_DISTANCE = 180;
+        const PARTICLE_SIZE = 2.2;
+        const MOUSE_ATTRACT_STRENGTH = 0;
+        
+        class Particle {
+            constructor(x, y, vx, vy) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+            }
+            
+            update() {
+                if (mousePresent && MOUSE_ATTRACT_STRENGTH > 0) {
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < 200 && dist > 5) {
+                        const force = MOUSE_ATTRACT_STRENGTH * (1 - dist / 250);
+                        this.vx += dx * force * 0.02;
+                        this.vy += dy * force * 0.02;
+                        const maxSpeed = PARTICLE_SPEED * 1.5;
+                        if (Math.abs(this.vx) > maxSpeed) this.vx = this.vx > 0 ? maxSpeed : -maxSpeed;
+                        if (Math.abs(this.vy) > maxSpeed) this.vy = this.vy > 0 ? maxSpeed : -maxSpeed;
+                    }
+                }
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0) { this.x = 0; this.vx = Math.abs(this.vx); }
+                if (this.x > width) { this.x = width; this.vx = -Math.abs(this.vx); }
+                if (this.y < 0) { this.y = 0; this.vy = Math.abs(this.vy); }
+                if (this.y > height) { this.y = height; this.vy = -Math.abs(this.vy); }
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, PARTICLE_SIZE, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.fill();
+            }
+        }
+        
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const vx = Math.cos(angle) * PARTICLE_SPEED;
+                const vy = Math.sin(angle) * PARTICLE_SPEED;
+                particles.push(new Particle(
+                    Math.random() * width,
+                    Math.random() * height,
+                    vx,
+                    vy
+                ));
+            }
+        }
+        
+        function drawBackground() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const grad = ctx.createLinearGradient(0, 0, width, height);
+            if (isDark) {
+                grad.addColorStop(0, '#0a0a0c');
+                grad.addColorStop(0.5, '#121214');
+                grad.addColorStop(1, '#1a1a1c');
+            } else {
+                grad.addColorStop(0, '#f5f5f7');
+                grad.addColorStop(0.5, '#ffffff');
+                grad.addColorStop(1, '#f0f0f5');
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+        }
+        
+        function drawLines() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < CONNECT_DISTANCE) {
+                        const opacity = (1 - dist / CONNECT_DISTANCE) * 0.4;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            if (mousePresent && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+                for (let i = 0; i < particles.length; i++) {
+                    const dx = particles[i].x - mouseX;
+                    const dy = particles[i].y - mouseY;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < MOUSE_CONNECT_DISTANCE) {
+                        const opacity = (1 - dist / MOUSE_CONNECT_DISTANCE) * 0.55;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(mouseX, mouseY);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                        ctx.lineWidth = 1.2;
+                        ctx.stroke();
+                    }
+                }
+                
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, 6, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
+            }
+        }
+        
+        function animateParticles() {
+            if (!ctx) return;
+            drawBackground();
+            for (let p of particles) {
+                p.update();
+                p.draw();
+            }
+            drawLines();
+            requestAnimationFrame(animateParticles);
+        }
+        
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            initParticles();
+            drawBackground();
+        }
+        
+        function handleMouseMove(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            mousePresent = true;
+        }
+        
+        function handleTouchMove(e) {
+            if (e.touches.length > 0) {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+                mousePresent = true;
+            }
+        }
+        
+        function handleMouseLeave() {
+            mousePresent = false;
+            mouseX = -1000;
+            mouseY = -1000;
+        }
+        
+        function initEvents() {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseleave', handleMouseLeave);
+            window.addEventListener('touchmove', handleTouchMove);
+            window.addEventListener('touchend', () => { mousePresent = false; });
+        }
+        
+        window.addEventListener('resize', () => { resizeCanvas(); });
+        
+        const themeObserver = new MutationObserver(() => { drawBackground(); });
+        themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        
+        resizeCanvas();
+        initEvents();
+        animateParticles();
+        // ====================================================
+
         function isForbiddenUsername(username) {
             if (!username) return false;
             const lowerUsername = username.toLowerCase();
-            return forbiddenWords.some(word => {
-                return lowerUsername.includes(word.toLowerCase());
-            });
+            return forbiddenWords.some(word => lowerUsername.includes(word.toLowerCase()));
         }
 
-        // 获取违禁提示语（随机返回一条，增加趣味性）
         function getForbiddenMessage() {
-            const messages = [
-                "🚫 该用户名包含违禁词，无法查询",
-                "⚠️ 检测到敏感词汇，请更换用户名",
-                "🔞 此名称不符合查询规则，已被拦截",
-                "❌ 违禁词触发，查询失败",
-                "🙅 该用户名已被加入黑名单"
-            ];
+            const messages = ["🚫 该用户名包含违禁词，无法查询", "⚠️ 检测到敏感词汇，请更换用户名", "🔞 此名称不符合查询规则，已被拦截", "❌ 违禁词触发，查询失败", "🙅 该用户名已被加入黑名单"];
             return messages[Math.floor(Math.random() * messages.length)];
         }
 
@@ -421,179 +663,97 @@
             const body = document.body;
             const modeToggle = document.getElementById('modeToggle');
             body.classList.toggle('dark-mode');
-            
-            if (body.classList.contains('dark-mode')) {
-                modeToggle.textContent = '☀️';
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                modeToggle.textContent = '🌙';
-                localStorage.setItem('darkMode', 'disabled');
-            }
+            modeToggle.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
+            drawBackground();
         }
 
         function loadDarkMode() {
-            const darkMode = localStorage.getItem('darkMode');
-            if (darkMode === 'enabled') {
+            if (localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark-mode');
                 document.getElementById('modeToggle').textContent = '☀️';
+                drawBackground();
             }
         }
 
-        function vibrate() {
-            if (window.navigator && window.navigator.vibrate) {
-                window.navigator.vibrate(50);
-            }
-        }
+        function vibrate() { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(50); }
 
         let rankData = [];
-
-        function loadRank() {
-            const saved = localStorage.getItem('rankData');
-            if (saved) {
-                rankData = JSON.parse(saved);
-            }
-        }
-
-        function saveRank() {
-            localStorage.setItem('rankData', JSON.stringify(rankData));
-        }
+        function loadRank() { const saved = localStorage.getItem('rankData'); if (saved) rankData = JSON.parse(saved); }
+        function saveRank() { localStorage.setItem('rankData', JSON.stringify(rankData)); }
 
         function displayRank() {
             const rankList = document.getElementById('rankList');
-            
             if (rankData.length === 0) {
                 rankList.innerHTML = '<div class="rank-empty">暂无数据，快来刷新记录！</div>';
                 return;
             }
-
             const sorted = [...rankData].sort((a, b) => b.value - a.value).slice(0, 10);
-
             rankList.innerHTML = sorted.map((item, index) => {
-                let medal = '';
-                if (index === 0) medal = '🥇';
-                else if (index === 1) medal = '🥈';
-                else if (index === 2) medal = '🥉';
-                else medal = `${index + 1}.`;
-
-                let displayValue = item.value;
-                if (item.value === Infinity || item.value === 999999) {
-                    displayValue = '∞';
-                }
-
-                return `
-                    <div class="rank-item">
-                        <span class="rank-medal">${medal}</span>
-                        <span class="rank-name">${escapeHtml(item.name)}</span>
-                        <span class="rank-value">${displayValue} cm</span>
-                    </div>
-                `;
+                let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                let displayValue = (item.value === Infinity || item.value === 999999) ? '∞' : item.value;
+                return `<div class="rank-item"><span class="rank-medal">${medal}</span><span class="rank-name">${escapeHtml(item.name)}</span><span class="rank-value">${displayValue} cm</span></div>`;
             }).join('');
         }
 
         function addToRank(name, value) {
             const existingIndex = rankData.findIndex(item => item.name === name);
-            
-            if (existingIndex !== -1) {
-                if (value > rankData[existingIndex].value) {
-                    rankData[existingIndex].value = value;
-                }
-            } else {
-                rankData.push({ name, value });
-            }
-
-            if (rankData.length > 100) {
-                rankData = rankData.slice(-100);
-            }
-
-            saveRank();
-            displayRank();
+            if (existingIndex !== -1) { if (value > rankData[existingIndex].value) rankData[existingIndex].value = value; }
+            else { rankData.push({ name, value }); }
+            if (rankData.length > 100) rankData = rankData.slice(-100);
+            saveRank(); displayRank();
         }
 
-        function clearRank() {
-            if (confirm('确定要清除所有排行榜数据吗？')) {
-                rankData = [];
-                saveRank();
+        function clearRank() { 
+            if (confirm('确定要清除所有排行榜数据吗？')) { 
+                rankData = []; 
+                saveRank(); 
                 displayRank();
-            }
+                resetButtonCounter();
+            } 
         }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function hashString(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return Math.abs(hash);
-        }
-
-        function seededRandom(seed) {
-            const x = Math.sin(seed) * 10000;
-            return x - Math.floor(x);
-        }
-
+        
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+        function hashString(str) { let hash = 0; for (let i = 0; i < str.length; i++) { const char = str.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash = hash & hash; } return Math.abs(hash); }
+        function seededRandom(seed) { const x = Math.sin(seed) * 10000; return x - Math.floor(x); }
         function getComment(value, isInfinite) {
-            if (isInfinite) {
-                return "✨ 超越维度的存在，宇宙为之震颤 ✨";
-            }
-            if (value <= 20) {
-                return "进化树在你这里长了回头枝";
-            } else if (value <= 150) {
-                return "《自然》杂志拒绝发表：样本量不足。";
-            } else if (value <= 500) {
-                return "NASA已发出邀请：我们需要你的天线。";
-            } else if (value <= 800) {
-                return "三体人发来贺电：地球人终于有拿得出手的东西了";
-            } else {
-                return "建议捐给国家，用于建造跨海大桥";
-            }
+            if (isInfinite) return "✨ 超越维度的存在，宇宙为之震颤 ✨";
+            if (value <= 20) return "进化树在你这里长了回头枝";
+            if (value <= 150) return "《自然》杂志拒绝发表：样本量不足。";
+            if (value <= 500) return "NASA已发出邀请：我们需要你的天线。";
+            if (value <= 800) return "三体人发来贺电：地球人终于有拿得出手的东西了";
+            return "建议捐给国家，用于建造跨海大桥";
         }
 
-        function calculate() {
+        // 执行真正的长度计算（新用户名或重置后首次点击）
+        function performCalculation() {
             const username = document.getElementById('username').value.trim();
             const errorMessage = document.getElementById('errorMessage');
             const resultContainer = document.getElementById('resultContainer');
             const usernameInput = document.getElementById('username');
-
+            
             errorMessage.textContent = '';
             usernameInput.classList.remove('error-input');
-
-            if (!username) {
-                errorMessage.textContent = '⚠️ 请输入用户名';
-                usernameInput.classList.add('error-input');
-                return;
+            
+            if (!username) { 
+                errorMessage.textContent = '⚠️ 请输入用户名'; 
+                usernameInput.classList.add('error-input'); 
+                return false; 
             }
-
-            // ========== 违禁词检测 ==========
+            
             if (isForbiddenUsername(username)) {
                 errorMessage.textContent = getForbiddenMessage();
                 usernameInput.classList.add('error-input');
-                
-                // 显示违禁提示结果卡片
                 resultContainer.classList.remove('animate', 'rainbow');
                 void resultContainer.offsetWidth;
                 resultContainer.classList.add('animate');
                 resultContainer.classList.add('forbidden-result');
-                resultContainer.innerHTML = `
-                    <div class="result-number" style="font-size: 2rem;">🚫</div>
-                    <div class="result-comment">用户名包含敏感词，无法进行查询</div>
-                `;
-                return;
+                resultContainer.innerHTML = `<div class="result-number" style="font-size: 2rem;">🚫</div><div class="result-comment">用户名包含敏感词，无法进行查询</div>`;
+                return false;
             }
-            // =================================
-
+            
             resultContainer.classList.remove('forbidden-result');
-
-            let randomValue;
-            let isSpecial = false;
-            let specialComment = "";
-
+            let randomValue, isSpecial = false, specialComment = "";
             if (username === "L0r3Seeker" || username === "撸大师") {
                 isSpecial = true;
                 randomValue = Infinity;
@@ -604,62 +764,92 @@
                 const seed = userHash + timestamp;
                 randomValue = Math.floor(seededRandom(seed) * 1001);
             }
-
-            let comment;
-            if (isSpecial) {
-                comment = specialComment;
-            } else {
-                comment = getComment(randomValue, false);
-            }
-
+            const comment = isSpecial ? specialComment : getComment(randomValue, false);
             resultContainer.classList.remove('animate');
             void resultContainer.offsetWidth;
             resultContainer.classList.add('animate');
-
-            if (isSpecial) {
-                resultContainer.classList.add('rainbow');
-                vibrate();
-            } else if (randomValue > 800) {
-                resultContainer.classList.add('rainbow');
-                vibrate();
-            } else {
-                resultContainer.classList.remove('rainbow');
+            if (isSpecial || randomValue > 800) { 
+                resultContainer.classList.add('rainbow'); 
+                if (randomValue > 800 || isSpecial) vibrate(); 
+            } else { 
+                resultContainer.classList.remove('rainbow'); 
             }
-
+            
+            let resultHTML;
             if (isSpecial) {
-                resultContainer.innerHTML = `
-                    <div class="result-number">∞ cm</div>
-                    <div class="result-comment">${comment}</div>
-                `;
+                resultHTML = `<div class="result-number">∞ cm</div><div class="result-comment">${comment}</div>`;
                 addToRank(username, 999999);
             } else {
-                resultContainer.innerHTML = `
-                    <div class="result-number">${randomValue} cm</div>
-                    <div class="result-comment">${comment}</div>
-                `;
+                resultHTML = `<div class="result-number">${randomValue} cm</div><div class="result-comment">${comment}</div>`;
                 addToRank(username, randomValue);
             }
+            resultContainer.innerHTML = resultHTML;
+            
+            // 保存本次计算结果
+            lastValidUsername = username;
+            lastResultHTML = resultHTML;
+            
+            return true;
+        }
+        
+        // 主入口：判断是彩蛋还是真正计算
+        function handleButtonClick() {
+            const username = document.getElementById('username').value.trim();
+            
+            // 如果按钮文字不是默认状态（说明处于彩蛋模式），则只触发彩蛋计数，不重新计算
+            if (calcBtn.textContent !== defaultBtnText) {
+                // 彩蛋模式：只增加计数，不重新计算
+                onEggClick();
+                return;
+            }
+            
+            // 按钮是默认状态：检查用户名是否有效
+            if (!username) {
+                // 没输入用户名，只显示错误，不触发任何计数
+                const errorMessage = document.getElementById('errorMessage');
+                const usernameInput = document.getElementById('username');
+                errorMessage.textContent = '⚠️ 请输入用户名';
+                usernameInput.classList.add('error-input');
+                return;
+            }
+            
+            if (isForbiddenUsername(username)) {
+                // 违禁词：直接显示错误，不触发彩蛋
+                const errorMessage = document.getElementById('errorMessage');
+                const usernameInput = document.getElementById('username');
+                const resultContainer = document.getElementById('resultContainer');
+                errorMessage.textContent = getForbiddenMessage();
+                usernameInput.classList.add('error-input');
+                resultContainer.classList.remove('animate', 'rainbow');
+                void resultContainer.offsetWidth;
+                resultContainer.classList.add('animate');
+                resultContainer.classList.add('forbidden-result');
+                resultContainer.innerHTML = `<div class="result-number" style="font-size: 2rem;">🚫</div><div class="result-comment">用户名包含敏感词，无法进行查询</div>`;
+                return;
+            }
+            
+            // 有效输入：执行真正计算
+            performCalculation();
+            
+            // 计算完成后，触发彩蛋计数（按钮文字开始变化）
+            onEggClick();
         }
 
         loadDarkMode();
         loadRank();
         displayRank();
-
-        document.getElementById('username').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                calculate();
-            }
-        });
-
-        // 输入时清除错误样式
+        
+        calcBtn.addEventListener('click', handleButtonClick);
+        
+        document.getElementById('username').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleButtonClick(); });
         document.getElementById('username').addEventListener('input', function() {
             this.classList.remove('error-input');
             document.getElementById('errorMessage').textContent = '';
-            const resultContainer = document.getElementById('resultContainer');
-            if (resultContainer.classList.contains('forbidden-result')) {
-                resultContainer.classList.remove('forbidden-result');
-                resultContainer.innerHTML = '<div class="placeholder-text">等待输入...</div>';
-                resultContainer.classList.remove('rainbow');
+            const rc = document.getElementById('resultContainer');
+            if (rc.classList.contains('forbidden-result')) {
+                rc.classList.remove('forbidden-result');
+                rc.innerHTML = '<div class="placeholder-text">等待输入...</div>';
+                rc.classList.remove('rainbow');
             }
         });
     </script>
