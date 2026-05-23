@@ -2,157 +2,171 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>牛子长度计算器</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-elevated: #f5f5f7;
+            --surface-card: #ffffff;
+            --surface-soft: #f9f9fb;
+            --text-main: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --text-tertiary: #8e8e93;
+            --border-subtle: rgba(0, 0, 0, 0.05);
+            --accent-dark: #2c2c2e;
+            --accent-hover: #3a3a3c;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+            --transition-smooth: all 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --error-color: #ff3b30;
+            --warning-color: #ff9500;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0a0a0c;
+            --bg-elevated: #1c1c1e;
+            --surface-card: #1c1c1e;
+            --surface-soft: #2c2c2e;
+            --text-main: #f5f5f7;
+            --text-secondary: #aeaeb2;
+            --text-tertiary: #8e8e93;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --accent-dark: #3a3a3c;
+            --accent-hover: #4a4a4c;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.3);
+            --error-color: #ff453a;
+            --warning-color: #ff9f0a;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
+            padding: 24px 16px;
             transition: background 0.3s ease;
-        }
-
-        /* 深色模式样式 */
-        body.dark-mode {
-            background: #1a1a1a;
-        }
-
-        body.dark-mode .container {
-            background: #2d2d2d;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        body.dark-mode h1 {
-            color: #4dd0e1;
-        }
-
-        body.dark-mode input[type="text"] {
-            background: #3d3d3d;
-            border-color: #4d4d4d;
-            color: white;
-        }
-
-        body.dark-mode input[type="text"]:focus {
-            border-color: #4dd0e1;
-            background: #3d3d3d;
-        }
-
-        body.dark-mode .rank-list {
-            background: #3d3d3d;
-        }
-
-        body.dark-mode .rank-item {
-            border-color: #4d4d4d;
-        }
-
-        body.dark-mode .rank-name {
-            color: #ddd;
-        }
-
-        body.dark-mode .rank-empty {
-            color: #888;
-        }
-
-        body.dark-mode .clear-rank {
-            border-color: #4dd0e1;
-            color: #4dd0e1;
-        }
-
-        body.dark-mode .clear-rank:hover {
-            background: #4dd0e1;
-            color: #2d2d2d;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 188, 212, 0.15);
-            padding: 40px;
-            max-width: 500px;
+            max-width: 540px;
             width: 100%;
-            transition: all 0.3s ease;
+            background: var(--surface-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            padding: 32px 28px;
+            transition: var(--transition-smooth);
+            border: 0.5px solid var(--border-subtle);
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
 
         h1 {
-            color: #00bcd4;
-            font-size: 2.5em;
-            font-weight: 700;
-            letter-spacing: 2px;
+            color: var(--text-main);
+            font-size: 1.9rem;
+            font-weight: 590;
+            letter-spacing: -0.3px;
             margin: 0;
         }
 
         .mode-toggle {
-            background: none;
-            border: none;
-            font-size: 1.8em;
+            background: var(--surface-soft);
+            border: 0.5px solid var(--border-subtle);
+            border-radius: 40px;
+            width: 44px;
+            height: 44px;
+            font-size: 1.3rem;
             cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
-            transition: all 0.3s;
-            width: auto;
-            margin: 0;
-            box-shadow: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
         }
 
         .mode-toggle:hover {
-            transform: scale(1.1);
-            background: rgba(0, 188, 212, 0.1);
+            transform: scale(0.94);
+            background: var(--bg-elevated);
         }
 
         .input-group {
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
 
         input[type="text"] {
             width: 100%;
             padding: 15px 20px;
-            font-size: 1.1em;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 450;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
             outline: none;
-            transition: all 0.3s ease;
-            background: #f9f9f9;
+            transition: var(--transition-smooth);
+            color: var(--text-main);
+            font-family: inherit;
         }
 
         input[type="text"]:focus {
-            border-color: #00bcd4;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+            border-color: var(--text-secondary);
+            background: var(--surface-card);
+            box-shadow: 0 0 0 3px rgba(110, 110, 115, 0.08);
+        }
+
+        input[type="text"].error-input {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+        }
+
+        .error-message {
+            font-size: 0.78rem;
+            color: var(--error-color);
+            margin-top: 8px;
+            margin-left: 12px;
+            font-weight: 470;
+            min-height: 22px;
         }
 
         .result-container {
-            margin: 30px 0;
-            padding: 30px;
-            background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%);
-            border-radius: 15px;
-            min-height: 180px;
+            margin: 28px 0;
+            padding: 28px 20px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-lg);
+            transition: var(--transition-smooth);
+            text-align: center;
+            border: 0.5px solid var(--border-subtle);
+            box-shadow: var(--shadow-sm);
+            min-height: 160px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            transition: all 0.3s ease;
         }
 
-        /* 动态彩色背景 */
         .result-container.rainbow {
             animation: rainbow 3s ease infinite;
             background-size: 400% 400%;
+            border: none;
         }
 
         @keyframes rainbow {
@@ -164,169 +178,170 @@
         }
 
         .result-number {
-            font-size: 3em;
+            font-size: 3.4rem;
             font-weight: 700;
-            color: white;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            color: var(--text-main);
+            margin-bottom: 12px;
+            line-height: 1.2;
         }
 
         .result-comment {
-            font-size: 1.1em;
-            color: rgba(255, 255, 255, 0.95);
-            line-height: 1.6;
+            font-size: 1rem;
+            color: var(--text-secondary);
             font-weight: 500;
+            line-height: 1.4;
         }
 
         .placeholder-text {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.2em;
+            color: var(--text-tertiary);
+            font-size: 1.1rem;
+        }
+
+        .result-container.rainbow .result-number,
+        .result-container.rainbow .result-comment {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .result-container.forbidden-result {
+            background: var(--surface-soft);
+            border: 1px solid var(--warning-color);
+        }
+
+        .result-container.forbidden-result .result-number {
+            color: var(--warning-color);
         }
 
         button {
-            background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%);
-            color: white;
+            background: var(--accent-dark);
             border: none;
-            padding: 15px 40px;
-            font-size: 1.1em;
-            border-radius: 12px;
+            padding: 14px 28px;
+            border-radius: 44px;
+            font-size: 0.96rem;
+            font-weight: 520;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             width: 100%;
-            margin-bottom: 30px;
+            color: white;
+            margin-bottom: 32px;
+            letter-spacing: -0.2px;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.4);
+            transform: scale(0.98);
+            background: var(--accent-hover);
         }
 
-        button:active {
-            transform: translateY(0);
-        }
-
-        .error-message {
-            color: #ff5252;
-            font-size: 0.9em;
-            margin-top: 10px;
-            min-height: 20px;
-        }
-
-        /* 排行榜样式 */
         .rank-section {
-            border-top: 2px solid #e0e0e0;
-            padding-top: 30px;
-            transition: border-color 0.3s ease;
-        }
-
-        body.dark-mode .rank-section {
-            border-top-color: #4d4d4d;
+            border-top: 0.5px solid var(--border-subtle);
+            padding-top: 28px;
         }
 
         .rank-title {
-            color: #00bcd4;
-            font-size: 1.5em;
+            color: var(--text-main);
+            font-size: 1.4rem;
+            font-weight: 590;
+            letter-spacing: -0.3px;
             margin-bottom: 20px;
-            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 10px;
+            justify-content: space-between;
         }
 
         .rank-list {
-            background: #f5f5f5;
-            border-radius: 12px;
-            padding: 15px;
+            background: var(--surface-soft);
+            border-radius: var(--radius-md);
+            padding: 8px 4px;
         }
 
         .rank-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 16px;
+            border-bottom: 0.5px solid var(--border-subtle);
+            transition: background 0.15s ease;
+            border-radius: var(--radius-sm);
+            margin: 2px 0;
         }
 
         .rank-item:last-child {
             border-bottom: none;
         }
 
+        .rank-item:hover {
+            background: var(--bg-elevated);
+        }
+
         .rank-medal {
-            font-size: 1.2em;
-            margin-right: 10px;
-            width: 30px;
+            font-size: 1.1rem;
+            min-width: 42px;
+            font-weight: 500;
         }
 
         .rank-name {
             flex: 1;
-            font-weight: 500;
-            color: #333;
+            font-weight: 480;
+            color: var(--text-main);
+            letter-spacing: -0.2px;
         }
 
         .rank-value {
-            font-weight: 700;
-            color: #00bcd4;
+            font-weight: 590;
+            color: var(--text-main);
+            background: var(--bg-primary);
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.82rem;
         }
 
         .rank-empty {
             text-align: center;
-            color: #999;
-            padding: 20px;
-            font-style: italic;
+            color: var(--text-tertiary);
+            padding: 28px 12px;
+            font-size: 0.9rem;
+            font-weight: 450;
         }
 
         .clear-rank {
-            background: none;
-            border: 1px solid #00bcd4;
-            color: #00bcd4;
-            padding: 8px 15px;
-            font-size: 0.9em;
-            border-radius: 20px;
+            background: transparent;
+            border: 0.5px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 7px 18px;
+            font-size: 0.78rem;
+            font-weight: 480;
+            border-radius: 40px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
             width: auto;
             margin: 0;
-            box-shadow: none;
         }
 
         .clear-rank:hover {
-            background: #00bcd4;
-            color: white;
-            transform: none;
+            background: var(--surface-soft);
+            color: var(--text-main);
+            transform: scale(0.96);
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 30px 20px;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            .result-number {
-                font-size: 2.5em;
-            }
-
-            .result-comment {
-                font-size: 1em;
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+        @keyframes softFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .animate {
-            animation: fadeIn 0.4s ease;
+            animation: softFadeIn 0.32s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        @media (max-width: 520px) {
+            .container {
+                padding: 24px 20px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            .result-number {
+                font-size: 2.6rem;
+            }
         }
     </style>
 </head>
@@ -353,7 +368,6 @@
 
         <button onclick="calculate()">🎲 重新计算</button>
 
-        <!-- 排行榜区域 -->
         <div class="rank-section">
             <div class="rank-title">
                 🏆 牛子排行榜
@@ -366,7 +380,43 @@
     </div>
 
     <script>
-        // 深色模式切换
+        // ==================== 违禁词配置区 ====================
+        // 在这里添加/删除/修改违禁词，支持中英文，数量不限
+        // 注意：匹配时不区分大小写，例如 "admin" 会匹配 "Admin"、"ADMIN" 等
+        const forbiddenWords = [
+            "习近平",
+            "邓小平",
+            "胡锦涛",
+            "江泽民",
+            "毛泽东",
+            "周恩来",
+            "林彪",
+            "王洪文",
+            "Admin"
+        ];
+        // ====================================================
+
+        // 违禁词检测函数（不区分大小写）
+        function isForbiddenUsername(username) {
+            if (!username) return false;
+            const lowerUsername = username.toLowerCase();
+            return forbiddenWords.some(word => {
+                return lowerUsername.includes(word.toLowerCase());
+            });
+        }
+
+        // 获取违禁提示语（随机返回一条，增加趣味性）
+        function getForbiddenMessage() {
+            const messages = [
+                "🚫 该用户名包含违禁词，无法查询",
+                "⚠️ 检测到敏感词汇，请更换用户名",
+                "🔞 此名称不符合查询规则，已被拦截",
+                "❌ 违禁词触发，查询失败",
+                "🙅 该用户名已被加入黑名单"
+            ];
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
         function toggleDarkMode() {
             const body = document.body;
             const modeToggle = document.getElementById('modeToggle');
@@ -381,7 +431,6 @@
             }
         }
 
-        // 加载深色模式偏好
         function loadDarkMode() {
             const darkMode = localStorage.getItem('darkMode');
             if (darkMode === 'enabled') {
@@ -390,14 +439,12 @@
             }
         }
 
-        // 振动反馈
         function vibrate() {
             if (window.navigator && window.navigator.vibrate) {
                 window.navigator.vibrate(50);
             }
         }
 
-        // 排行榜数据
         let rankData = [];
 
         function loadRank() {
@@ -428,11 +475,16 @@
                 else if (index === 2) medal = '🥉';
                 else medal = `${index + 1}.`;
 
+                let displayValue = item.value;
+                if (item.value === Infinity || item.value === 999999) {
+                    displayValue = '∞';
+                }
+
                 return `
                     <div class="rank-item">
                         <span class="rank-medal">${medal}</span>
                         <span class="rank-name">${escapeHtml(item.name)}</span>
-                        <span class="rank-value">${item.value} cm</span>
+                        <span class="rank-value">${displayValue} cm</span>
                     </div>
                 `;
             }).join('');
@@ -486,7 +538,10 @@
             return x - Math.floor(x);
         }
 
-        function getComment(value) {
+        function getComment(value, isInfinite) {
+            if (isInfinite) {
+                return "✨ 超越维度的存在，宇宙为之震颤 ✨";
+            }
             if (value <= 20) {
                 return "进化树在你这里长了回头枝";
             } else if (value <= 150) {
@@ -504,38 +559,86 @@
             const username = document.getElementById('username').value.trim();
             const errorMessage = document.getElementById('errorMessage');
             const resultContainer = document.getElementById('resultContainer');
+            const usernameInput = document.getElementById('username');
 
             errorMessage.textContent = '';
+            usernameInput.classList.remove('error-input');
 
             if (!username) {
                 errorMessage.textContent = '⚠️ 请输入用户名';
+                usernameInput.classList.add('error-input');
                 return;
             }
 
-            const userHash = hashString(username);
-            const timestamp = Date.now();
-            const seed = userHash + timestamp;
-            const randomValue = Math.floor(seededRandom(seed) * 1001);
+            // ========== 违禁词检测 ==========
+            if (isForbiddenUsername(username)) {
+                errorMessage.textContent = getForbiddenMessage();
+                usernameInput.classList.add('error-input');
+                
+                // 显示违禁提示结果卡片
+                resultContainer.classList.remove('animate', 'rainbow');
+                void resultContainer.offsetWidth;
+                resultContainer.classList.add('animate');
+                resultContainer.classList.add('forbidden-result');
+                resultContainer.innerHTML = `
+                    <div class="result-number" style="font-size: 2rem;">🚫</div>
+                    <div class="result-comment">用户名包含敏感词，无法进行查询</div>
+                `;
+                return;
+            }
+            // =================================
 
-            const comment = getComment(randomValue);
+            resultContainer.classList.remove('forbidden-result');
+
+            let randomValue;
+            let isSpecial = false;
+            let specialComment = "";
+
+            if (username === "L0r3Seeker" || username === "撸大师") {
+                isSpecial = true;
+                randomValue = Infinity;
+                specialComment = "✨ 超越维度的存在，宇宙为之震颤 ✨";
+            } else {
+                const userHash = hashString(username);
+                const timestamp = Date.now();
+                const seed = userHash + timestamp;
+                randomValue = Math.floor(seededRandom(seed) * 1001);
+            }
+
+            let comment;
+            if (isSpecial) {
+                comment = specialComment;
+            } else {
+                comment = getComment(randomValue, false);
+            }
 
             resultContainer.classList.remove('animate');
             void resultContainer.offsetWidth;
             resultContainer.classList.add('animate');
 
-            if (randomValue > 800) {
+            if (isSpecial) {
+                resultContainer.classList.add('rainbow');
+                vibrate();
+            } else if (randomValue > 800) {
                 resultContainer.classList.add('rainbow');
                 vibrate();
             } else {
                 resultContainer.classList.remove('rainbow');
             }
 
-            resultContainer.innerHTML = `
-                <div class="result-number">${randomValue} cm</div>
-                <div class="result-comment">${comment}</div>
-            `;
-
-            addToRank(username, randomValue);
+            if (isSpecial) {
+                resultContainer.innerHTML = `
+                    <div class="result-number">∞ cm</div>
+                    <div class="result-comment">${comment}</div>
+                `;
+                addToRank(username, 999999);
+            } else {
+                resultContainer.innerHTML = `
+                    <div class="result-number">${randomValue} cm</div>
+                    <div class="result-comment">${comment}</div>
+                `;
+                addToRank(username, randomValue);
+            }
         }
 
         loadDarkMode();
@@ -545,6 +648,18 @@
         document.getElementById('username').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 calculate();
+            }
+        });
+
+        // 输入时清除错误样式
+        document.getElementById('username').addEventListener('input', function() {
+            this.classList.remove('error-input');
+            document.getElementById('errorMessage').textContent = '';
+            const resultContainer = document.getElementById('resultContainer');
+            if (resultContainer.classList.contains('forbidden-result')) {
+                resultContainer.classList.remove('forbidden-result');
+                resultContainer.innerHTML = '<div class="placeholder-text">等待输入...</div>';
+                resultContainer.classList.remove('rainbow');
             }
         });
     </script>
