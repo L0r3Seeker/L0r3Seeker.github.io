@@ -422,13 +422,17 @@
         
         // 更新按钮文字（根据点击次数）
         function updateButtonText() {
-            if (clickCount === 1) {
-                calcBtn.textContent = '✨ 成绩很好了';
-            } else if (clickCount === 2) {
-                calcBtn.textContent = '🌟 很棒了';
+            if (clickCount === 2) {
+                calcBtn.textContent = '你已经查询过了！';
             } else if (clickCount === 3) {
-                calcBtn.textContent = '💪 很不错了';
-            } else if (clickCount >= 4) {
+                calcBtn.textContent = '你的测试结果已给出！';
+            } else if (clickCount === 4) {
+                calcBtn.textContent = '别点了';
+            } else if (clickCount === 5) {
+                calcBtn.textContent = '没用的';
+            } else if (clickCount === 6) {
+                calcBtn.textContent = '那你点吧';
+            } else if (clickCount >= 7) {
                 calcBtn.textContent = `×${clickCount}`;
             }
         }
