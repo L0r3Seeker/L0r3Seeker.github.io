@@ -13,42 +13,32 @@
         }
 
         :root {
-            --bg-primary: #ffffff;
-            --bg-elevated: #f5f5f7;
-            --surface-card: rgba(255, 255, 255, 0.92);
-            --surface-soft: rgba(249, 249, 251, 0.88);
-            --text-main: #1d1d1f;
-            --text-secondary: #6e6e73;
-            --text-tertiary: #8e8e93;
-            --border-subtle: rgba(0, 0, 0, 0.06);
-            --accent-dark: #2c2c2e;
+            --bg-primary: #000000;
+            --bg-elevated: #0a0a0a;
+            --surface-card: rgba(10, 10, 10, 0.92);
+            --surface-soft: rgba(20, 20, 20, 0.88);
+            --text-main: #f5f5f7;
+            --text-secondary: #aeaeb2;
+            --text-tertiary: #6e6e73;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --accent-dark: #2a2a2c;
             --accent-hover: #3a3a3c;
-            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.06);
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.6);
             --transition-smooth: all 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             --radius-xl: 28px;
             --radius-lg: 20px;
             --radius-md: 16px;
             --radius-sm: 12px;
-            --error-color: #ff3b30;
-            --warning-color: #ff9500;
-        }
-
-        body.dark-mode {
-            --bg-primary: #0a0a0c;
-            --bg-elevated: #1c1c1e;
-            --surface-card: rgba(28, 28, 30, 0.92);
-            --surface-soft: rgba(44, 44, 46, 0.88);
-            --text-main: #f5f5f7;
-            --text-secondary: #aeaeb2;
-            --text-tertiary: #8e8e93;
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --accent-dark: #3a3a3c;
-            --accent-hover: #4a4a4c;
-            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.2);
-            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.3);
             --error-color: #ff453a;
             --warning-color: #ff9f0a;
+            --highlight-hue: 210;
+            --highlight: hsl(var(--highlight-hue), 100%, 70%);
+            --highlight-50: hsla(var(--highlight-hue), 100%, 70%, 0.5);
+            --highlight-30: hsla(var(--highlight-hue), 100%, 70%, 0.3);
+            --highlight-20: hsla(var(--highlight-hue), 100%, 70%, 0.2);
+            --highlight-80: hsla(var(--highlight-hue), 100%, 70%, 0.8);
+            --spotlight-hue: 210;
         }
 
         body {
@@ -66,7 +56,55 @@
             overflow-x: hidden;
         }
 
-        #particleCanvas {
+        /* 聚光灯背景 */
+        #spotlightBg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: #000000;
+            pointer-events: none;
+            display: none;
+        }
+        #spotlightBg.active { display: block; }
+        #spotlightBg .spotlight-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            transition: all 0.15s ease-out;
+            pointer-events: none;
+            will-change: transform, left, top;
+            background: radial-gradient(circle, rgba(100,180,255,0.6), rgba(80,120,255,0.2), transparent 70%);
+        }
+        #spotlightBg .spotlight-glow-2 {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.3;
+            transition: all 0.2s ease-out;
+            pointer-events: none;
+            will-change: transform, left, top;
+            background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);
+        }
+        #spotlightBg .spotlight-ring {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.15s ease-out;
+            pointer-events: none;
+            will-change: transform, left, top;
+        }
+
+        #bgCanvas {
             position: fixed;
             top: 0;
             left: 0;
@@ -75,6 +113,27 @@
             display: block;
             z-index: 0;
             pointer-events: none;
+        }
+
+        #inkRevealContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: none;
+            pointer-events: none;
+        }
+        #inkRevealContainer.active {
+            display: block;
+            pointer-events: auto;
+        }
+        #inkRevealContainer canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: none;
         }
 
         .container {
@@ -106,25 +165,94 @@
             margin: 0;
         }
 
-        .mode-toggle {
-            background: var(--surface-soft);
-            border: 0.5px solid var(--border-subtle);
-            border-radius: 40px;
-            width: 44px;
-            height: 44px;
-            font-size: 1.3rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        /* ===== 玻璃态按钮组 ===== */
+        .glass-toggle-group {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-main);
-            backdrop-filter: blur(4px);
+            gap: 4px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 40px;
+            padding: 4px;
+            border: 0.5px solid rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
-        .mode-toggle:hover {
+        .glass-toggle-btn {
+            background: transparent;
+            border: none;
+            border-radius: 30px;
+            padding: 6px 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            color: var(--text-tertiary);
+            line-height: 1;
+            position: relative;
+            backdrop-filter: blur(4px);
+            font-family: inherit;
+        }
+
+        .glass-toggle-btn:hover {
+            color: var(--text-main);
+            background: rgba(255,255,255,0.06);
+            transform: scale(0.96);
+        }
+
+        .glass-toggle-btn.active {
+            background: rgba(255,255,255,0.12);
+            color: white;
+            box-shadow: 0 0 20px rgba(100,180,255,0.08);
+            border: 0.5px solid rgba(255,255,255,0.08);
+        }
+
+        .glass-toggle-btn .tooltip {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .glass-toggle-btn:hover .tooltip {
+            opacity: 1;
+        }
+
+        /* ===== 玻璃态清除按钮 ===== */
+        .glass-clear-btn {
+            background: rgba(255,255,255,0.04);
+            border: 0.5px solid rgba(255,255,255,0.06);
+            color: var(--text-secondary);
+            padding: 7px 16px;
+            font-size: 0.78rem;
+            font-weight: 450;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            width: auto;
+            margin: 0;
+            backdrop-filter: blur(4px);
+            font-family: inherit;
+            letter-spacing: -0.2px;
+        }
+
+        .glass-clear-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-main);
+            transform: scale(0.96);
+            border-color: rgba(255,255,255,0.12);
+        }
+
+        .glass-clear-btn:active {
             transform: scale(0.94);
-            background: var(--bg-elevated);
         }
 
         .input-group {
@@ -148,12 +276,12 @@
         input[type="text"]:focus {
             border-color: var(--text-secondary);
             background: var(--surface-card);
-            box-shadow: 0 0 0 3px rgba(110, 110, 115, 0.08);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
         }
 
         input[type="text"].error-input {
             border-color: var(--error-color);
-            box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+            box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.1);
         }
 
         .error-message {
@@ -230,24 +358,194 @@
             color: var(--warning-color);
         }
 
-        button {
-            background: var(--accent-dark);
-            border: none;
+        /* ===== 炫酷按钮 (保持不变) ===== */
+        .ui-anim-btn {
+            --padding: 4px;
+            --radius: 24px;
+            --transition: 0.4s;
+            --highlight: hsl(var(--highlight-hue), 100%, 70%);
+            --highlight-50: hsla(var(--highlight-hue), 100%, 70%, 0.5);
+            --highlight-30: hsla(var(--highlight-hue), 100%, 70%, 0.3);
+            --highlight-20: hsla(var(--highlight-hue), 100%, 70%, 0.2);
+            --highlight-80: hsla(var(--highlight-hue), 100%, 70%, 0.8);
+            --ui-anim-svg-fill: #888;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            border-radius: 24px;
             padding: 14px 28px;
-            border-radius: 44px;
+            width: 100%;
+            background: var(--accent-dark);
+            color: white;
+            border: 0.5px solid var(--border-subtle);
+            transition: box-shadow 0.4s, border 0.4s, background-color 0.4s;
+            margin-bottom: 32px;
             font-size: 0.96rem;
             font-weight: 520;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            width: 100%;
-            color: white;
-            margin-bottom: 32px;
             letter-spacing: -0.2px;
+            overflow: visible;
+            font-family: inherit;
         }
 
-        button:hover {
-            transform: scale(0.98);
-            background: var(--accent-hover);
+        .ui-anim-btn::before {
+            content: "";
+            position: absolute;
+            top: calc(0px - var(--padding));
+            left: calc(0px - var(--padding));
+            width: calc(100% + var(--padding) * 2);
+            height: calc(100% + var(--padding) * 2);
+            border-radius: calc(var(--radius) + var(--padding));
+            pointer-events: none;
+            background-image: linear-gradient(0deg, #0004, #000a);
+            z-index: -1;
+            transition: box-shadow var(--transition), filter var(--transition);
+            box-shadow: 0 -8px 8px -6px #0000 inset, 0 -16px 16px -8px #00000000 inset, 1px 1px 1px #fff1, -1px -1px 1px #0003;
+        }
+
+        .ui-anim-btn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background-image: linear-gradient(0deg, #fff, var(--highlight), var(--highlight-50), 8%, transparent);
+            background-position: 0 0;
+            opacity: 0;
+            transition: opacity var(--transition), filter var(--transition);
+        }
+
+        .ui-anim-btn:hover {
+            border-color: hsla(var(--highlight-hue), 100%, 80%, 0.3);
+        }
+        .ui-anim-btn:hover::before {
+            box-shadow: 0 -8px 8px -6px #fff2 inset, 0 -16px 16px -8px var(--highlight-30) inset, 1px 1px 1px #fff2, -1px -1px 1px #0003;
+        }
+        .ui-anim-btn:hover::after {
+            opacity: 1;
+            -webkit-mask-image: linear-gradient(0deg, #fff, transparent);
+            mask-image: linear-gradient(0deg, #fff, transparent);
+        }
+        .ui-anim-btn:hover .ui-anim-btn-svg {
+            fill: #fff;
+            filter: drop-shadow(0 0 3px var(--highlight)) drop-shadow(0 -4px 6px #0009);
+            animation: none;
+        }
+
+        .ui-anim-btn:active {
+            border-color: hsla(var(--highlight-hue), 100%, 80%, 0.5);
+            background-color: hsla(var(--highlight-hue), 50%, 20%, 0.3);
+        }
+        .ui-anim-btn:active::before {
+            box-shadow: 0 -8px 12px -6px #fff3 inset, 0 -16px 16px -8px var(--highlight-80) inset, 1px 1px 1px #fff3, -1px -1px 1px #0003;
+        }
+        .ui-anim-btn:active::after {
+            opacity: 1;
+            -webkit-mask-image: linear-gradient(0deg, #fff, transparent);
+            mask-image: linear-gradient(0deg, #fff, transparent);
+            filter: brightness(200%);
+        }
+        .ui-anim-btn:active .ui-anim-letter {
+            text-shadow: 0 0 1px hsla(var(--highlight-hue), 100%, 90%, 0.9);
+            animation: none;
+        }
+
+        .ui-anim-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .ui-anim-btn-svg {
+            margin-right: 12px;
+            height: 24px;
+            width: 24px;
+            flex-shrink: 0;
+            fill: var(--ui-anim-svg-fill);
+            transition: fill 0.4s, filter 0.4s, opacity 0.4s;
+            filter: drop-shadow(0 0 2px #fff5);
+            animation: ui-flicker 2s linear infinite;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes ui-flicker {
+            50% { opacity: 0.3; }
+        }
+
+        .ui-anim-txt-wrapper {
+            position: relative;
+            display: flex;
+            min-width: 6.4em;
+            align-items: center;
+        }
+
+        .ui-anim-txt-1,
+        .ui-anim-txt-2 {
+            position: absolute;
+            display: flex;
+            gap: 0.02em;
+        }
+
+        .ui-anim-txt-1 { opacity: 1; }
+        .ui-anim-txt-2 { opacity: 0; }
+
+        .ui-anim-letter {
+            display: inline-block;
+            color: #ffffff88;
+            animation: ui-letter-anim 2s ease-in-out infinite;
+            transition: color var(--transition), text-shadow var(--transition), opacity var(--transition);
+        }
+
+        @keyframes ui-letter-anim {
+            50% {
+                text-shadow: 0 0 3px #fff8;
+                color: #fff;
+            }
+        }
+
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(1),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(1) { animation-delay: 0s; }
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(2),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(2) { animation-delay: 0.08s; }
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(3),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(3) { animation-delay: 0.16s; }
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(4),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(4) { animation-delay: 0.24s; }
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(5),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(5) { animation-delay: 0.32s; }
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(6),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(6) { animation-delay: 0.4s; }
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(7),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(7) { animation-delay: 0.48s; }
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(8),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(8) { animation-delay: 0.56s; }
+        .ui-anim-txt-1 .ui-anim-letter:nth-child(9),
+        .ui-anim-txt-2 .ui-anim-letter:nth-child(9) { animation-delay: 0.64s; }
+
+        .ui-anim-btn.generating .ui-anim-txt-1 { opacity: 0; }
+        .ui-anim-btn.generating .ui-anim-txt-2 { opacity: 1; }
+        .ui-anim-btn.generating .ui-anim-btn-svg {
+            animation-duration: 1.2s;
+            animation-delay: 0.2s;
+        }
+        .ui-anim-btn.generating::before {
+            box-shadow: 0 -8px 12px -6px #fff2 inset, 0 -16px 16px -8px var(--highlight-20) inset, 1px 1px 1px #fff2, -1px -1px 1px #0003;
+        }
+        .ui-anim-btn.generating::after {
+            opacity: 0.6;
+            -webkit-mask-image: linear-gradient(0deg, #fff, transparent);
+            mask-image: linear-gradient(0deg, #fff, transparent);
+            filter: brightness(100%);
+        }
+        .ui-anim-btn.generating .ui-anim-letter {
+            animation: ui-focused-letter 1s ease-in-out forwards, ui-letter-anim 1.2s ease-in-out infinite;
+            animation-delay: 0s, 1s;
+        }
+
+        @keyframes ui-focused-letter {
+            0%, 100% { filter: blur(0px); transform: scale(1); }
+            50% { transform: scale(2); filter: blur(10px) brightness(150%) drop-shadow(-36px 12px 12px var(--highlight)); }
         }
 
         .rank-section {
@@ -284,13 +582,8 @@
             margin: 2px 0;
         }
 
-        .rank-item:last-child {
-            border-bottom: none;
-        }
-
-        .rank-item:hover {
-            background: var(--bg-elevated);
-        }
+        .rank-item:last-child { border-bottom: none; }
+        .rank-item:hover { background: var(--bg-elevated); }
 
         .rank-medal {
             font-size: 1.1rem;
@@ -322,26 +615,6 @@
             font-weight: 450;
         }
 
-        .clear-rank {
-            background: transparent;
-            border: 0.5px solid var(--border-subtle);
-            color: var(--text-secondary);
-            padding: 7px 18px;
-            font-size: 0.78rem;
-            font-weight: 480;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: auto;
-            margin: 0;
-        }
-
-        .clear-rank:hover {
-            background: var(--surface-soft);
-            color: var(--text-main);
-            transform: scale(0.96);
-        }
-
         @keyframes softFadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
@@ -352,35 +625,62 @@
         }
 
         @media (max-width: 520px) {
-            .container {
-                padding: 24px 20px;
-            }
-            h1 {
-                font-size: 1.7rem;
-            }
-            .result-number {
-                font-size: 2.6rem;
-            }
+            .container { padding: 24px 20px; }
+            h1 { font-size: 1.7rem; }
+            .result-number { font-size: 2.6rem; }
+            .glass-toggle-group { gap: 2px; padding: 3px; flex-wrap: wrap; }
+            .glass-toggle-btn { font-size: 0.8rem; padding: 4px 7px; }
+            .glass-toggle-btn .tooltip { display: none; }
+            .glass-clear-btn { font-size: 0.7rem; padding: 5px 12px; }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="particleCanvas"></canvas>
+    <!-- 聚光灯背景 -->
+    <div id="spotlightBg">
+        <div class="spotlight-glow" id="spotlightGlow"></div>
+        <div class="spotlight-glow-2" id="spotlightGlow2"></div>
+        <div class="spotlight-ring" id="spotlightRing"></div>
+    </div>
+
+    <!-- 其他背景画布 -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- 墨水揭晓容器 -->
+    <div id="inkRevealContainer">
+        <canvas id="inkCanvas"></canvas>
+    </div>
 
     <div class="container">
         <div class="header">
             <h1>🐂 牛子长度计算器</h1>
-            <button class="mode-toggle" onclick="toggleDarkMode()" id="modeToggle">🌙</button>
+            <div class="glass-toggle-group">
+                <button class="glass-toggle-btn active" data-mode="flow" title="流场粒子">
+                    🌊
+                    <span class="tooltip">流场粒子</span>
+                </button>
+                <button class="glass-toggle-btn" data-mode="line" title="粒子连线">
+                    ✦
+                    <span class="tooltip">粒子连线</span>
+                </button>
+                <button class="glass-toggle-btn" data-mode="shader" title="炫光粒子">
+                    ◈
+                    <span class="tooltip">炫光粒子</span>
+                </button>
+                <button class="glass-toggle-btn" data-mode="ink" title="墨水揭晓">
+                    🖌
+                    <span class="tooltip">墨水揭晓</span>
+                </button>
+                <button class="glass-toggle-btn" data-mode="spotlight" title="聚光灯">
+                    💡
+                    <span class="tooltip">聚光灯</span>
+                </button>
+            </div>
         </div>
         
         <div class="input-group">
-            <input 
-                type="text" 
-                id="username" 
-                placeholder="请输入用户名"
-                maxlength="20"
-            >
+            <input type="text" id="username" placeholder="请输入用户名" maxlength="20">
             <div class="error-message" id="errorMessage"></div>
         </div>
 
@@ -388,12 +688,39 @@
             <div class="placeholder-text">等待输入...</div>
         </div>
 
-        <button id="calcBtn">🎲 重新计算</button>
+        <!-- 炫酷计算按钮 (保持不变) -->
+        <button class="ui-anim-btn" id="calcBtn" style="--highlight-hue: 210deg;">
+            <svg class="ui-anim-btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"></path>
+            </svg>
+            <div class="ui-anim-txt-wrapper">
+                <div class="ui-anim-txt-1" id="btnLabelIdle">
+                    <span class="ui-anim-letter">🎲</span>
+                    <span class="ui-anim-letter"> </span>
+                    <span class="ui-anim-letter">重</span>
+                    <span class="ui-anim-letter">新</span>
+                    <span class="ui-anim-letter"> </span>
+                    <span class="ui-anim-letter">计</span>
+                    <span class="ui-anim-letter">算</span>
+                </div>
+                <div class="ui-anim-txt-2" id="btnLabelActive">
+                    <span class="ui-anim-letter">✨</span>
+                    <span class="ui-anim-letter"> </span>
+                    <span class="ui-anim-letter">计</span>
+                    <span class="ui-anim-letter">算</span>
+                    <span class="ui-anim-letter"> </span>
+                    <span class="ui-anim-letter">中</span>
+                    <span class="ui-anim-letter">.</span>
+                    <span class="ui-anim-letter">.</span>
+                    <span class="ui-anim-letter">.</span>
+                </div>
+            </div>
+        </button>
 
         <div class="rank-section">
             <div class="rank-title">
                 🏆 牛子排行榜
-                <button class="clear-rank" onclick="clearRank()">清除榜单</button>
+                <button class="glass-clear-btn" id="clearRankBtn">清除榜单</button>
             </div>
             <div class="rank-list" id="rankList">
                 <div class="rank-empty">暂无数据，快来刷新记录！</div>
@@ -402,326 +729,570 @@
     </div>
 
     <script>
-        // ==================== 违禁词配置区 ====================
-        const forbiddenWords = [
-            "习近平", "江泽民", "胡锦涛", "邓小平", "毛泽东",
-            "叶剑英", "李先念", "刘少奇", "王洪文", "林彪",
-            "赵紫阳", "韩正"
-        ];
-        // ====================================================
+        // ==================== 违禁词 ====================
+        const forbiddenWords = ["admin", "习近平", "邓小平", "江泽民", "胡锦涛", "习仲勋", "敏感词测试", "赵紫阳", "李先念", "周恩来", "毛泽东", "李宗林"];
 
-        // ==================== 彩蛋计数器（按钮文字替换） ====================
-        let clickCount = 0;              // 有效点击次数（仅用于彩蛋展示）
-        let resetTimer = null;           // 重置定时器
-        let lastCalculatedResult = null; // 最后一次有效计算的结果（用户名+数值+评论）
-        let lastValidUsername = "";      // 最后一次成功计算的用户名
-        let lastResultHTML = "";         // 最后一次的结果HTML
-        
-        const calcBtn = document.getElementById('calcBtn');
-        const defaultBtnText = '🎲 重新计算';
-        
-        // 更新按钮文字（根据点击次数）
-        function updateButtonText() {
-            if (clickCount === 2) {
-                calcBtn.textContent = '你已经查询过了！';
-            } else if (clickCount === 3) {
-                calcBtn.textContent = '你的测试结果已给出！';
-            } else if (clickCount === 4) {
-                calcBtn.textContent = '别点了';
-            } else if (clickCount === 5) {
-                calcBtn.textContent = '没用的';
-            } else if (clickCount === 6) {
-                calcBtn.textContent = '那你点吧';
-            } else if (clickCount >= 7) {
-                calcBtn.textContent = `×${clickCount}`;
-            }
-        }
-        
-        // 重置计数器（恢复按钮文字，清除定时器）
-        function resetButtonCounter() {
-            if (resetTimer) {
-                clearTimeout(resetTimer);
-                resetTimer = null;
-            }
-            clickCount = 0;
-            calcBtn.textContent = defaultBtnText;
-        }
-        
-        // 彩蛋点击（只改变按钮文字，不重新计算结果）
-        function onEggClick() {
-            // 清除之前的定时器
-            if (resetTimer) {
-                clearTimeout(resetTimer);
-            }
-            // 增加计数
-            clickCount++;
-            // 更新按钮文字
-            updateButtonText();
-            // 设置2秒后自动重置
-            resetTimer = setTimeout(() => {
-                resetButtonCounter();
-            }, 2000);
-        }
-        // ====================================================
-
-        // ==================== 粒子网络背景 ====================
-        const canvas = document.getElementById('particleCanvas');
-        let ctx = canvas.getContext('2d');
+        // ==================== 背景系统 ====================
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
         let width, height;
-        let particles = [];
-        let mouseX = -1000, mouseY = -1000;
-        let mousePresent = false;
-        
-        const PARTICLE_COUNT = 100;
-        const PARTICLE_SPEED = 0.8;
-        const CONNECT_DISTANCE = 150;
-        const MOUSE_CONNECT_DISTANCE = 180;
-        const PARTICLE_SIZE = 2.2;
-        const MOUSE_ATTRACT_STRENGTH = 0;
-        
-        class Particle {
-            constructor(x, y, vx, vy) {
-                this.x = x;
-                this.y = y;
-                this.vx = vx;
-                this.vy = vy;
+        let bgMode = 'flow';
+        let animId = null;
+        let mouseX = -1000, mouseY = -1000, mousePresent = false;
+        let time = 0;
+
+        // ---- 聚光灯 ----
+        const spotlightBg = document.getElementById('spotlightBg');
+        const glow = document.getElementById('spotlightGlow');
+        const glow2 = document.getElementById('spotlightGlow2');
+        const ring = document.getElementById('spotlightRing');
+
+        function updateSpotlight(x, y) {
+            if (x < 0 || y < 0) return;
+            const cx = x - 150;
+            const cy = y - 150;
+            glow.style.left = cx + 'px';
+            glow.style.top = cy + 'px';
+            glow2.style.left = (x - 90) + 'px';
+            glow2.style.top = (y - 90) + 'px';
+            ring.style.left = (x - 60) + 'px';
+            ring.style.top = (y - 60) + 'px';
+            const hue = 200 + (x / window.innerWidth) * 60 + (y / window.innerHeight) * 30;
+            glow.style.background = `radial-gradient(circle, hsla(${hue}, 90%, 70%, 0.5), hsla(${hue - 30}, 80%, 50%, 0.15), transparent 70%)`;
+            ring.style.borderColor = `hsla(${hue}, 80%, 70%, 0.1)`;
+        }
+
+        function startSpotlight() {
+            spotlightBg.classList.add('active');
+            updateSpotlight(mouseX > 0 ? mouseX : window.innerWidth/2, mouseY > 0 ? mouseY : window.innerHeight/2);
+        }
+
+        function stopSpotlight() {
+            spotlightBg.classList.remove('active');
+        }
+
+        // ---- Ink Reveal ----
+        const inkContainer = document.getElementById('inkRevealContainer');
+        const inkCanvas = document.getElementById('inkCanvas');
+        let inkCtx = null;
+        let inkStrokes = [];
+        let isInkActive = false;
+
+        function initInk() {
+            if (!inkCtx) {
+                inkCtx = inkCanvas.getContext('2d');
             }
-            
+            inkCanvas.width = window.innerWidth;
+            inkCanvas.height = window.innerHeight;
+            inkCtx.fillStyle = '#000000';
+            inkCtx.fillRect(0, 0, inkCanvas.width, inkCanvas.height);
+            inkStrokes = [];
+            isInkActive = true;
+        }
+
+        function addInkStroke(x, y) {
+            if (!isInkActive) return;
+            const size = 40 + Math.random() * 30;
+            inkStrokes.push({
+                x, y, size,
+                life: 80 + Math.random() * 40,
+                maxLife: 120,
+                angle: Math.random() * Math.PI * 2,
+                opacity: 0.5 + Math.random() * 0.3
+            });
+            if (inkStrokes.length > 80) inkStrokes.shift();
+        }
+
+        function updateInk() {
+            if (!isInkActive || !inkCtx) return;
+            inkCtx.globalCompositeOperation = 'source-over';
+            inkCtx.fillStyle = 'rgba(0,0,0,0.025)';
+            inkCtx.fillRect(0, 0, inkCanvas.width, inkCanvas.height);
+            inkCtx.globalCompositeOperation = 'destination-out';
+
+            for (let i = inkStrokes.length - 1; i >= 0; i--) {
+                const s = inkStrokes[i];
+                s.life -= 0.8;
+                if (s.life <= 0) { inkStrokes.splice(i, 1); continue; }
+                const progress = 1 - s.life / s.maxLife;
+                const currentSize = s.size * (1 - progress * 0.7);
+                const alpha = s.opacity * (0.3 + 0.7 * (1 - progress));
+                const count = 5 + Math.floor(Math.random() * 4);
+                for (let j = 0; j < count; j++) {
+                    const angleOff = s.angle + (j / count) * Math.PI * 2 + Math.sin(time + j) * 0.5;
+                    const dist = currentSize * (0.2 + Math.random() * 0.6);
+                    const px = s.x + Math.cos(angleOff) * dist;
+                    const py = s.y + Math.sin(angleOff) * dist;
+                    const r = 8 + Math.random() * 12 * (1 - progress * 0.5);
+                    const grad = inkCtx.createRadialGradient(px, py, 0, px, py, r);
+                    grad.addColorStop(0, `rgba(255,255,255,${alpha * 0.9})`);
+                    grad.addColorStop(0.5, `rgba(255,255,255,${alpha * 0.5})`);
+                    grad.addColorStop(1, `rgba(255,255,255,0)`);
+                    inkCtx.fillStyle = grad;
+                    inkCtx.beginPath();
+                    inkCtx.arc(px, py, r, 0, Math.PI * 2);
+                    inkCtx.fill();
+                }
+            }
+            inkCtx.globalCompositeOperation = 'source-over';
+        }
+
+        function inkRevealLoop() {
+            if (!isInkActive) return;
+            updateInk();
+            requestAnimationFrame(inkRevealLoop);
+        }
+
+        function startInk() {
+            isInkActive = true;
+            inkContainer.classList.add('active');
+            initInk();
+            inkRevealLoop();
+        }
+
+        function stopInk() {
+            isInkActive = false;
+            inkContainer.classList.remove('active');
+            if (inkCtx) {
+                inkCtx.clearRect(0, 0, inkCanvas.width, inkCanvas.height);
+            }
+            inkStrokes = [];
+        }
+
+        // ---- 流场粒子 ----
+        let flowParticles = [];
+        const FLOW_COUNT = 160;
+        const TRAIL_LENGTH = 35;
+
+        class FlowParticle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = 0.3 + Math.random() * 0.7;
+                this.trail = [];
+                this.size = 1.0 + Math.random() * 1.0;
+            }
             update() {
-                if (mousePresent && MOUSE_ATTRACT_STRENGTH > 0) {
-                    const dx = mouseX - this.x;
-                    const dy = mouseY - this.y;
-                    const dist = Math.hypot(dx, dy);
+                const nx = this.x * 0.008, ny = this.y * 0.008;
+                const angleOffset = Math.sin(nx + time * 0.3) * 0.8 + Math.cos(ny + time * 0.2) * 0.8;
+                this.angle += angleOffset * 0.04;
+                if (mousePresent && mouseX >= 0) {
+                    const dx = this.x - mouseX, dy = this.y - mouseY, dist = Math.hypot(dx, dy);
+                    if (dist < 120 && dist > 0) {
+                        this.angle += Math.atan2(dy, dx) * (1.2 / (dist + 1)) * 0.06;
+                    }
+                }
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                if (this.x < -20) this.x = width + 20;
+                if (this.x > width + 20) this.x = -20;
+                if (this.y < -20) this.y = height + 20;
+                if (this.y > height + 20) this.y = -20;
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > TRAIL_LENGTH) this.trail.shift();
+            }
+            draw() {
+                if (this.trail.length < 2) return;
+                for (let i = 1; i < this.trail.length; i++) {
+                    const alpha = (i / this.trail.length) * 0.7;
+                    const size = this.size * (0.15 + 0.85 * (i / this.trail.length));
+                    ctx.beginPath();
+                    ctx.arc(this.trail[i].x, this.trail[i].y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(160, 210, 255, ${alpha * 0.45})`;
+                    ctx.fill();
+                }
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 1.3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(210, 235, 255, 0.85)`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x - this.size * 0.3, this.y - this.size * 0.3, this.size * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, 0.5)`;
+                ctx.fill();
+            }
+        }
+
+        function initFlow() { flowParticles = []; for (let i = 0; i < FLOW_COUNT; i++) flowParticles.push(new FlowParticle()); }
+
+        // ---- 粒子连线 ----
+        let lineParticles = [];
+        const LINE_COUNT = 80;
+
+        class LineParticle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+            }
+            update() {
+                if (mousePresent && mouseX > 0) {
+                    const dx = mouseX - this.x, dy = mouseY - this.y, dist = Math.hypot(dx, dy);
                     if (dist < 200 && dist > 5) {
-                        const force = MOUSE_ATTRACT_STRENGTH * (1 - dist / 250);
-                        this.vx += dx * force * 0.02;
-                        this.vy += dy * force * 0.02;
-                        const maxSpeed = PARTICLE_SPEED * 1.5;
+                        const force = 0.025 * (1 - dist / 200);
+                        this.vx += dx * force;
+                        this.vy += dy * force;
+                        const maxSpeed = 1.5;
                         if (Math.abs(this.vx) > maxSpeed) this.vx = this.vx > 0 ? maxSpeed : -maxSpeed;
                         if (Math.abs(this.vy) > maxSpeed) this.vy = this.vy > 0 ? maxSpeed : -maxSpeed;
                     }
                 }
-                
                 this.x += this.vx;
                 this.y += this.vy;
-                
                 if (this.x < 0) { this.x = 0; this.vx = Math.abs(this.vx); }
                 if (this.x > width) { this.x = width; this.vx = -Math.abs(this.vx); }
                 if (this.y < 0) { this.y = 0; this.vy = Math.abs(this.vy); }
                 if (this.y > height) { this.y = height; this.vy = -Math.abs(this.vy); }
+                this.vx *= 0.997;
+                this.vy *= 0.997;
             }
-            
             draw() {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, PARTICLE_SIZE, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.arc(this.x, this.y, 2.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(200, 220, 255, 0.7)';
                 ctx.fill();
             }
         }
-        
-        function initParticles() {
-            particles = [];
-            for (let i = 0; i < PARTICLE_COUNT; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const vx = Math.cos(angle) * PARTICLE_SPEED;
-                const vy = Math.sin(angle) * PARTICLE_SPEED;
-                particles.push(new Particle(
-                    Math.random() * width,
-                    Math.random() * height,
-                    vx,
-                    vy
-                ));
-            }
-        }
-        
-        function drawBackground() {
-            const isDark = document.body.classList.contains('dark-mode');
-            const grad = ctx.createLinearGradient(0, 0, width, height);
-            if (isDark) {
-                grad.addColorStop(0, '#0a0a0c');
-                grad.addColorStop(0.5, '#121214');
-                grad.addColorStop(1, '#1a1a1c');
-            } else {
-                grad.addColorStop(0, '#f5f5f7');
-                grad.addColorStop(0.5, '#ffffff');
-                grad.addColorStop(1, '#f0f0f5');
-            }
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, width, height);
-        }
-        
-        function drawLines() {
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
+
+        function initLineParticles() { lineParticles = []; for (let i = 0; i < LINE_COUNT; i++) lineParticles.push(new LineParticle()); }
+
+        function drawLineConnections() {
+            for (let i = 0; i < lineParticles.length; i++) {
+                for (let j = i + 1; j < lineParticles.length; j++) {
+                    const dx = lineParticles[i].x - lineParticles[j].x;
+                    const dy = lineParticles[i].y - lineParticles[j].y;
                     const dist = Math.hypot(dx, dy);
-                    if (dist < CONNECT_DISTANCE) {
-                        const opacity = (1 - dist / CONNECT_DISTANCE) * 0.4;
+                    if (dist < 120) {
                         ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                        ctx.moveTo(lineParticles[i].x, lineParticles[i].y);
+                        ctx.lineTo(lineParticles[j].x, lineParticles[j].y);
+                        ctx.strokeStyle = `rgba(180, 210, 255, ${(1 - dist / 120) * 0.25})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+            if (mousePresent && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+                for (let p of lineParticles) {
+                    const dx = p.x - mouseX, dy = p.y - mouseY, dist = Math.hypot(dx, dy);
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(mouseX, mouseY);
+                        ctx.strokeStyle = `rgba(200, 230, 255, ${(1 - dist / 150) * 0.35})`;
                         ctx.lineWidth = 1;
                         ctx.stroke();
                     }
                 }
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, 5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, 2.5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
             }
-            
-            if (mousePresent && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
-                for (let i = 0; i < particles.length; i++) {
-                    const dx = particles[i].x - mouseX;
-                    const dy = particles[i].y - mouseY;
+        }
+
+        // ---- Shader风格 ----
+        let shaderParticles = [];
+        const SHADER_COUNT = 120;
+
+        class ShaderParticle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = 0.2 + Math.random() * 0.4;
+                this.orbitRadius = 20 + Math.random() * 80;
+                this.orbitSpeed = 0.005 + Math.random() * 0.015;
+                this.phase = Math.random() * Math.PI * 2;
+                this.size = 1.5 + Math.random() * 2.5;
+                this.baseX = this.x;
+                this.baseY = this.y;
+            }
+            update() {
+                this.phase += this.orbitSpeed;
+                const rad = this.orbitRadius * (0.6 + 0.4 * Math.sin(this.phase * 0.3));
+                this.x = this.baseX + Math.cos(this.phase) * rad;
+                this.y = this.baseY + Math.sin(this.phase * 0.7) * rad * 0.6;
+                this.baseX += Math.sin(time * 0.1 + this.angle) * 0.08;
+                this.baseY += Math.cos(time * 0.08 + this.angle * 1.2) * 0.08;
+                if (this.baseX < 0) this.baseX = width;
+                if (this.baseX > width) this.baseX = 0;
+                if (this.baseY < 0) this.baseY = height;
+                if (this.baseY > height) this.baseY = 0;
+            }
+            draw() {
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                grad.addColorStop(0, `rgba(200, 230, 255, 0.4)`);
+                grad.addColorStop(0.5, `rgba(150, 200, 255, 0.1)`);
+                grad.addColorStop(1, `rgba(100, 150, 255, 0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(220, 240, 255, 0.6)`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, 0.7)`;
+                ctx.fill();
+            }
+        }
+
+        function initShader() { shaderParticles = []; for (let i = 0; i < SHADER_COUNT; i++) shaderParticles.push(new ShaderParticle()); }
+
+        function drawShaderConnections() {
+            for (let i = 0; i < shaderParticles.length; i++) {
+                for (let j = i + 1; j < shaderParticles.length; j++) {
+                    const dx = shaderParticles[i].x - shaderParticles[j].x;
+                    const dy = shaderParticles[i].y - shaderParticles[j].y;
                     const dist = Math.hypot(dx, dy);
-                    if (dist < MOUSE_CONNECT_DISTANCE) {
-                        const opacity = (1 - dist / MOUSE_CONNECT_DISTANCE) * 0.55;
+                    if (dist < 100) {
                         ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(mouseX, mouseY);
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                        ctx.lineWidth = 1.2;
+                        ctx.moveTo(shaderParticles[i].x, shaderParticles[i].y);
+                        ctx.lineTo(shaderParticles[j].x, shaderParticles[j].y);
+                        ctx.strokeStyle = `rgba(180, 210, 255, ${(1 - dist / 100) * 0.12})`;
+                        ctx.lineWidth = 0.5;
                         ctx.stroke();
                     }
                 }
-                
+            }
+            if (mousePresent && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+                for (let p of shaderParticles) {
+                    const dx = p.x - mouseX, dy = p.y - mouseY, dist = Math.hypot(dx, dy);
+                    if (dist < 130) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(mouseX, mouseY);
+                        ctx.strokeStyle = `rgba(200, 230, 255, ${(1 - dist / 130) * 0.2})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+                const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 60);
+                grad.addColorStop(0, 'rgba(255,255,255,0.08)');
+                grad.addColorStop(0.5, 'rgba(180,210,255,0.04)');
+                grad.addColorStop(1, 'rgba(100,150,255,0)');
+                ctx.fillStyle = grad;
                 ctx.beginPath();
-                ctx.arc(mouseX, mouseY, 6, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(mouseX, mouseY, 3, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.arc(mouseX, mouseY, 60, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
-        
-        function animateParticles() {
-            if (!ctx) return;
+
+        // ---- 渲染 ----
+        function drawBackground() {
+            const grad = ctx.createLinearGradient(0, 0, width, height);
+            grad.addColorStop(0, '#000000');
+            grad.addColorStop(0.5, '#0a0a0a');
+            grad.addColorStop(1, '#050505');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function renderFlow() {
             drawBackground();
-            for (let p of particles) {
-                p.update();
-                p.draw();
+            time += 0.015;
+            for (let p of flowParticles) { p.update(); p.draw(); }
+            for (let i = 0; i < flowParticles.length; i++) {
+                for (let j = i + 1; j < flowParticles.length; j++) {
+                    const dx = flowParticles[i].x - flowParticles[j].x;
+                    const dy = flowParticles[i].y - flowParticles[j].y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < 50) {
+                        ctx.beginPath();
+                        ctx.moveTo(flowParticles[i].x, flowParticles[i].y);
+                        ctx.lineTo(flowParticles[j].x, flowParticles[j].y);
+                        ctx.strokeStyle = `rgba(140, 190, 255, ${(1 - dist / 50) * 0.12})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
             }
-            drawLines();
-            requestAnimationFrame(animateParticles);
+            animId = requestAnimationFrame(renderFlow);
         }
-        
+
+        function renderLine() {
+            drawBackground();
+            for (let p of lineParticles) { p.update(); p.draw(); }
+            drawLineConnections();
+            animId = requestAnimationFrame(renderLine);
+        }
+
+        function renderShader() {
+            drawBackground();
+            time += 0.012;
+            for (let i = 0; i < 3; i++) {
+                const x = width * (0.2 + 0.6 * (0.5 + 0.5 * Math.sin(time * 0.1 + i * 2.1)));
+                const y = height * (0.2 + 0.6 * (0.5 + 0.5 * Math.cos(time * 0.08 + i * 1.7)));
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, 150 + 80 * Math.sin(time * 0.05 + i));
+                grad.addColorStop(0, `rgba(60, 100, 180, 0.04)`);
+                grad.addColorStop(0.5, `rgba(40, 80, 160, 0.02)`);
+                grad.addColorStop(1, `rgba(0,0,0,0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, 150 + 80 * Math.sin(time * 0.05 + i), 0, Math.PI * 2);
+                ctx.fill();
+            }
+            for (let p of shaderParticles) { p.update(); p.draw(); }
+            drawShaderConnections();
+            animId = requestAnimationFrame(renderShader);
+        }
+
+        function startRender() {
+            if (animId) cancelAnimationFrame(animId);
+            if (bgMode === 'flow') { initFlow(); renderFlow(); }
+            else if (bgMode === 'line') { initLineParticles(); renderLine(); }
+            else if (bgMode === 'shader') { initShader(); renderShader(); }
+            else if (bgMode === 'ink') { stopSpotlight(); startInk(); }
+            else if (bgMode === 'spotlight') { stopInk(); startSpotlight(); }
+        }
+
         function resizeCanvas() {
             width = window.innerWidth;
             height = window.innerHeight;
             canvas.width = width;
             canvas.height = height;
-            initParticles();
-            drawBackground();
+            if (bgMode === 'flow') initFlow();
+            else if (bgMode === 'line') initLineParticles();
+            else if (bgMode === 'shader') initShader();
         }
-        
-        function handleMouseMove(e) {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            mousePresent = true;
-        }
-        
-        function handleTouchMove(e) {
-            if (e.touches.length > 0) {
-                mouseX = e.touches[0].clientX;
-                mouseY = e.touches[0].clientY;
-                mousePresent = true;
-            }
-        }
-        
-        function handleMouseLeave() {
-            mousePresent = false;
-            mouseX = -1000;
-            mouseY = -1000;
-        }
-        
-        function initEvents() {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseleave', handleMouseLeave);
-            window.addEventListener('touchmove', handleTouchMove);
-            window.addEventListener('touchend', () => { mousePresent = false; });
-        }
-        
-        window.addEventListener('resize', () => { resizeCanvas(); });
-        
-        const themeObserver = new MutationObserver(() => { drawBackground(); });
-        themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-        
-        resizeCanvas();
-        initEvents();
-        animateParticles();
-        // ====================================================
 
+        // ---- 切换背景 ----
+        document.querySelectorAll('.glass-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.glass-toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const oldMode = bgMode;
+                bgMode = this.dataset.mode;
+                // 如果切换到 ink 或 spotlight，需要停止其他背景
+                if (oldMode === 'ink' && bgMode !== 'ink') stopInk();
+                if (oldMode === 'spotlight' && bgMode !== 'spotlight') stopSpotlight();
+                if (bgMode === 'ink') { stopSpotlight(); startInk(); }
+                else if (bgMode === 'spotlight') { stopInk(); startSpotlight(); }
+                else { stopInk(); stopSpotlight(); startRender(); }
+            });
+        });
+
+        // ---- 鼠标事件 ----
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX; mouseY = e.clientY; mousePresent = true;
+            if (bgMode === 'spotlight') updateSpotlight(mouseX, mouseY);
+            if (bgMode === 'ink' && isInkActive) addInkStroke(mouseX, mouseY);
+        });
+        window.addEventListener('mouseleave', () => { mouseX = -1000; mouseY = -1000; mousePresent = false; });
+        window.addEventListener('touchmove', e => {
+            if (e.touches.length > 0) {
+                mouseX = e.touches[0].clientX; mouseY = e.touches[0].clientY; mousePresent = true;
+                if (bgMode === 'spotlight') updateSpotlight(mouseX, mouseY);
+                if (bgMode === 'ink' && isInkActive) addInkStroke(mouseX, mouseY);
+            }
+        }, { passive: true });
+        window.addEventListener('touchend', () => { mousePresent = false; });
+        window.addEventListener('resize', resizeCanvas);
+
+        // ==================== 按钮彩蛋 ====================
+        let clickCount = 0, resetTimer = null;
+        const calcBtn = document.getElementById('calcBtn');
+        const labelIdle = document.getElementById('btnLabelIdle');
+        const labelActive = document.getElementById('btnLabelActive');
+
+        function resetButtonCounter() {
+            if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+            clickCount = 0;
+            calcBtn.classList.remove('generating');
+            labelIdle.innerHTML = `<span class="ui-anim-letter">🎲</span><span class="ui-anim-letter"> </span><span class="ui-anim-letter">重</span><span class="ui-anim-letter">新</span><span class="ui-anim-letter"> </span><span class="ui-anim-letter">计</span><span class="ui-anim-letter">算</span>`;
+            labelActive.innerHTML = `<span class="ui-anim-letter">✨</span><span class="ui-anim-letter"> </span><span class="ui-anim-letter">计</span><span class="ui-anim-letter">算</span><span class="ui-anim-letter"> </span><span class="ui-anim-letter">中</span><span class="ui-anim-letter">.</span><span class="ui-anim-letter">.</span><span class="ui-anim-letter">.</span>`;
+        }
+
+        function updateEggText(count) {
+            let idleText, activeText;
+            if (count === 1) {
+                idleText = ['✨', ' ', '成', '绩', '很', '好', '了'];
+                activeText = ['🌟', ' ', '成', '绩', '很', '好', '了', '!'];
+            } else if (count === 2) {
+                idleText = ['🌟', ' ', '很', '棒', '了', '!'];
+                activeText = ['💪', ' ', '很', '棒', '了', '!', '!'];
+            } else if (count === 3) {
+                idleText = ['💪', ' ', '很', '不', '错', '了'];
+                activeText = ['🔥', ' ', '很', '不', '错', '了', '!'];
+            } else {
+                const numStr = String(count);
+                idleText = ['×', ...numStr];
+                activeText = ['×', ...numStr, ' ', '次'];
+            }
+            labelIdle.innerHTML = idleText.map(ch => `<span class="ui-anim-letter">${ch}</span>`).join('');
+            labelActive.innerHTML = activeText.map(ch => `<span class="ui-anim-letter">${ch}</span>`).join('');
+            calcBtn.classList.add('generating');
+        }
+
+        function onEggClick() {
+            if (resetTimer) clearTimeout(resetTimer);
+            clickCount++;
+            updateEggText(clickCount);
+            resetTimer = setTimeout(resetButtonCounter, 2000);
+        }
+
+        // ==================== 核心功能 ====================
         function isForbiddenUsername(username) {
             if (!username) return false;
-            const lowerUsername = username.toLowerCase();
-            return forbiddenWords.some(word => lowerUsername.includes(word.toLowerCase()));
+            const lower = username.toLowerCase();
+            return forbiddenWords.some(w => lower.includes(w.toLowerCase()));
         }
 
         function getForbiddenMessage() {
-            const messages = ["🚫 该用户名包含违禁词，无法查询", "⚠️ 检测到敏感词汇，请更换用户名", "🔞 此名称不符合查询规则，已被拦截", "❌ 违禁词触发，查询失败", "🙅 该用户名已被加入黑名单"];
-            return messages[Math.floor(Math.random() * messages.length)];
+            const msgs = ["🚫 该用户名包含违禁词，无法查询", "⚠️ 检测到敏感词汇，请更换用户名", "🔞 此名称不符合查询规则，已被拦截", "❌ 违禁词触发，查询失败", "🙅 该用户名已被加入黑名单"];
+            return msgs[Math.floor(Math.random() * msgs.length)];
         }
 
-        function toggleDarkMode() {
-            const body = document.body;
-            const modeToggle = document.getElementById('modeToggle');
-            body.classList.toggle('dark-mode');
-            modeToggle.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
-            localStorage.setItem('darkMode', body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
-            drawBackground();
-        }
-
-        function loadDarkMode() {
-            if (localStorage.getItem('darkMode') === 'enabled') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('modeToggle').textContent = '☀️';
-                drawBackground();
-            }
-        }
-
-        function vibrate() { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(50); }
+        function vibrate() { if (window.navigator?.vibrate) window.navigator.vibrate(50); }
 
         let rankData = [];
-        function loadRank() { const saved = localStorage.getItem('rankData'); if (saved) rankData = JSON.parse(saved); }
+        function loadRank() { const s = localStorage.getItem('rankData'); if (s) rankData = JSON.parse(s); }
         function saveRank() { localStorage.setItem('rankData', JSON.stringify(rankData)); }
 
         function displayRank() {
-            const rankList = document.getElementById('rankList');
-            if (rankData.length === 0) {
-                rankList.innerHTML = '<div class="rank-empty">暂无数据，快来刷新记录！</div>';
-                return;
-            }
+            const list = document.getElementById('rankList');
+            if (!rankData.length) { list.innerHTML = '<div class="rank-empty">暂无数据，快来刷新记录！</div>'; return; }
             const sorted = [...rankData].sort((a, b) => b.value - a.value).slice(0, 10);
-            rankList.innerHTML = sorted.map((item, index) => {
-                let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
-                let displayValue = (item.value === Infinity || item.value === 999999) ? '∞' : item.value;
-                return `<div class="rank-item"><span class="rank-medal">${medal}</span><span class="rank-name">${escapeHtml(item.name)}</span><span class="rank-value">${displayValue} cm</span></div>`;
+            list.innerHTML = sorted.map((item, idx) => {
+                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
+                const v = (item.value === Infinity || item.value === 999999) ? '∞' : item.value;
+                return `<div class="rank-item"><span class="rank-medal">${medal}</span><span class="rank-name">${escapeHtml(item.name)}</span><span class="rank-value">${v} cm</span></div>`;
             }).join('');
         }
 
         function addToRank(name, value) {
-            const existingIndex = rankData.findIndex(item => item.name === name);
-            if (existingIndex !== -1) { if (value > rankData[existingIndex].value) rankData[existingIndex].value = value; }
+            const idx = rankData.findIndex(i => i.name === name);
+            if (idx !== -1) { if (value > rankData[idx].value) rankData[idx].value = value; }
             else { rankData.push({ name, value }); }
             if (rankData.length > 100) rankData = rankData.slice(-100);
             saveRank(); displayRank();
         }
 
-        function clearRank() { 
-            if (confirm('确定要清除所有排行榜数据吗？')) { 
-                rankData = []; 
-                saveRank(); 
+        function clearRank() {
+            if (confirm('确定要清除所有排行榜数据吗？')) {
+                rankData = [];
+                saveRank();
                 displayRank();
                 resetButtonCounter();
-            } 
+            }
         }
-        
-        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
-        function hashString(str) { let hash = 0; for (let i = 0; i < str.length; i++) { const char = str.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash = hash & hash; } return Math.abs(hash); }
+
+        document.getElementById('clearRankBtn').addEventListener('click', clearRank);
+
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function hashString(s) { let h = 0; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h = ((h << 5) - h) + c; h = h & h; } return Math.abs(h); }
         function seededRandom(seed) { const x = Math.sin(seed) * 10000; return x - Math.floor(x); }
-        function getComment(value, isInfinite) {
-            if (isInfinite) return "✨ 超越维度的存在，宇宙为之震颤 ✨";
+        function getComment(value, isInf) {
+            if (isInf) return "✨ 超越维度的存在，宇宙为之震颤 ✨";
             if (value <= 20) return "进化树在你这里长了回头枝";
             if (value <= 150) return "《自然》杂志拒绝发表：样本量不足。";
             if (value <= 500) return "NASA已发出邀请：我们需要你的天线。";
@@ -729,33 +1300,30 @@
             return "建议捐给国家，用于建造跨海大桥";
         }
 
-        // 执行真正的长度计算（新用户名或重置后首次点击）
         function performCalculation() {
             const username = document.getElementById('username').value.trim();
-            const errorMessage = document.getElementById('errorMessage');
+            const errMsg = document.getElementById('errorMessage');
             const resultContainer = document.getElementById('resultContainer');
-            const usernameInput = document.getElementById('username');
-            
-            errorMessage.textContent = '';
-            usernameInput.classList.remove('error-input');
-            
-            if (!username) { 
-                errorMessage.textContent = '⚠️ 请输入用户名'; 
-                usernameInput.classList.add('error-input'); 
-                return false; 
+            const input = document.getElementById('username');
+            errMsg.textContent = '';
+            input.classList.remove('error-input');
+
+            if (!username) {
+                errMsg.textContent = '⚠️ 请输入用户名';
+                input.classList.add('error-input');
+                return false;
             }
-            
             if (isForbiddenUsername(username)) {
-                errorMessage.textContent = getForbiddenMessage();
-                usernameInput.classList.add('error-input');
+                errMsg.textContent = getForbiddenMessage();
+                input.classList.add('error-input');
                 resultContainer.classList.remove('animate', 'rainbow');
                 void resultContainer.offsetWidth;
                 resultContainer.classList.add('animate');
                 resultContainer.classList.add('forbidden-result');
-                resultContainer.innerHTML = `<div class="result-number" style="font-size: 2rem;">🚫</div><div class="result-comment">用户名包含敏感词，无法进行查询</div>`;
+                resultContainer.innerHTML = `<div class="result-number" style="font-size:2rem;">🚫</div><div class="result-comment">用户名包含敏感词，无法进行查询</div>`;
                 return false;
             }
-            
+
             resultContainer.classList.remove('forbidden-result');
             let randomValue, isSpecial = false, specialComment = "";
             if (username === "L0r3Seeker" || username === "撸大师") {
@@ -763,89 +1331,68 @@
                 randomValue = Infinity;
                 specialComment = "✨ 超越维度的存在，宇宙为之震颤 ✨";
             } else {
-                const userHash = hashString(username);
-                const timestamp = Date.now();
-                const seed = userHash + timestamp;
+                const seed = hashString(username) + Date.now();
                 randomValue = Math.floor(seededRandom(seed) * 1001);
             }
             const comment = isSpecial ? specialComment : getComment(randomValue, false);
             resultContainer.classList.remove('animate');
             void resultContainer.offsetWidth;
             resultContainer.classList.add('animate');
-            if (isSpecial || randomValue > 800) { 
-                resultContainer.classList.add('rainbow'); 
-                if (randomValue > 800 || isSpecial) vibrate(); 
-            } else { 
-                resultContainer.classList.remove('rainbow'); 
+            if (isSpecial || randomValue > 800) {
+                resultContainer.classList.add('rainbow');
+                if (randomValue > 800 || isSpecial) vibrate();
+            } else {
+                resultContainer.classList.remove('rainbow');
             }
-            
-            let resultHTML;
             if (isSpecial) {
-                resultHTML = `<div class="result-number">∞ cm</div><div class="result-comment">${comment}</div>`;
+                resultContainer.innerHTML = `<div class="result-number">∞ cm</div><div class="result-comment">${comment}</div>`;
                 addToRank(username, 999999);
             } else {
-                resultHTML = `<div class="result-number">${randomValue} cm</div><div class="result-comment">${comment}</div>`;
+                resultContainer.innerHTML = `<div class="result-number">${randomValue} cm</div><div class="result-comment">${comment}</div>`;
                 addToRank(username, randomValue);
             }
-            resultContainer.innerHTML = resultHTML;
-            
-            // 保存本次计算结果
-            lastValidUsername = username;
-            lastResultHTML = resultHTML;
-            
             return true;
         }
-        
-        // 主入口：判断是彩蛋还是真正计算
-        function handleButtonClick() {
+
+        function handleClick() {
             const username = document.getElementById('username').value.trim();
-            
-            // 如果按钮文字不是默认状态（说明处于彩蛋模式），则只触发彩蛋计数，不重新计算
-            if (calcBtn.textContent !== defaultBtnText) {
-                // 彩蛋模式：只增加计数，不重新计算
+            if (calcBtn.classList.contains('generating')) {
                 onEggClick();
                 return;
             }
-            
-            // 按钮是默认状态：检查用户名是否有效
             if (!username) {
-                // 没输入用户名，只显示错误，不触发任何计数
-                const errorMessage = document.getElementById('errorMessage');
-                const usernameInput = document.getElementById('username');
-                errorMessage.textContent = '⚠️ 请输入用户名';
-                usernameInput.classList.add('error-input');
+                document.getElementById('errorMessage').textContent = '⚠️ 请输入用户名';
+                document.getElementById('username').classList.add('error-input');
                 return;
             }
-            
             if (isForbiddenUsername(username)) {
-                // 违禁词：直接显示错误，不触发彩蛋
-                const errorMessage = document.getElementById('errorMessage');
-                const usernameInput = document.getElementById('username');
+                const errMsg = document.getElementById('errorMessage');
+                const input = document.getElementById('username');
                 const resultContainer = document.getElementById('resultContainer');
-                errorMessage.textContent = getForbiddenMessage();
-                usernameInput.classList.add('error-input');
+                errMsg.textContent = getForbiddenMessage();
+                input.classList.add('error-input');
                 resultContainer.classList.remove('animate', 'rainbow');
                 void resultContainer.offsetWidth;
                 resultContainer.classList.add('animate');
                 resultContainer.classList.add('forbidden-result');
-                resultContainer.innerHTML = `<div class="result-number" style="font-size: 2rem;">🚫</div><div class="result-comment">用户名包含敏感词，无法进行查询</div>`;
+                resultContainer.innerHTML = `<div class="result-number" style="font-size:2rem;">🚫</div><div class="result-comment">用户名包含敏感词，无法进行查询</div>`;
                 return;
             }
-            
-            // 有效输入：执行真正计算
             performCalculation();
-            
-            // 计算完成后，触发彩蛋计数（按钮文字开始变化）
             onEggClick();
         }
 
-        loadDarkMode();
+        // ==================== 初始化 ====================
         loadRank();
         displayRank();
-        
-        calcBtn.addEventListener('click', handleButtonClick);
-        
-        document.getElementById('username').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleButtonClick(); });
+        resizeCanvas();
+        // 默认启动流场
+        startRender();
+
+        calcBtn.addEventListener('click', handleClick);
+        document.getElementById('username').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleClick();
+        });
         document.getElementById('username').addEventListener('input', function() {
             this.classList.remove('error-input');
             document.getElementById('errorMessage').textContent = '';
